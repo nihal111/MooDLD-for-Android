@@ -3,4 +3,6 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FF4081</color>
+    <color name="moodle">#E6A141</color>
+    <color name="moodleDark">#F28033</color>
 </resources>

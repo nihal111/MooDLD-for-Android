@@ -1,9 +1,14 @@
 package com.moodld.moodld;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,20 +16,36 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.Arrays;
 
 public class LoginActivity extends AppCompatActivity {
 
     private String htmlPageUrl = "http://www.google.com/";
     private final String TAG = "LoginActivity";
+    Button login;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_login);
 
         JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
         jsoupAsyncTask.execute(htmlPageUrl);
 
+        login=(Button)findViewById(R.id.login);
+
+        login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                EditText ed1 = (EditText) findViewById(R.id.name);
+                EditText ed2 = (EditText) findViewById(R.id.pass);
+                String username = ed1.getText().toString();
+                String password = ed2.getText().toString();
+
+                Log.d("Login", "Username: " + username + " Password: " + password);
+            }
+        });
     }
 
     private class JsoupAsyncTask extends AsyncTask<String, Void, Void> {
