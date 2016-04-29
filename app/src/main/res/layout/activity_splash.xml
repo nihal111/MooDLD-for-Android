@@ -7,7 +7,7 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
-    android:background="#E6A141"
+    android:background="@color/moodle"
     tools:context="com.moodld.moodld.Splash">
 
     <ImageView

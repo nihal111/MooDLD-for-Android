@@ -1,9 +1,14 @@
 package com.moodld.moodld;
 
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.View;
+import android.widget.Button;
+import android.widget.EditText;
+import android.widget.Toast;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -11,6 +16,8 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,20 +32,43 @@ import okhttp3.Request;
 import okhttp3.RequestBody;
 import okhttp3.Response;
 
+
 public class LoginActivity extends AppCompatActivity {
 
     private final String loginPageUrl = "http://moodle.iitb.ac.in/login/index.php";
     private final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private final String TAG = "LoginActivity";
+    Button login;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_login);
 
-        String[] login_details = {"arpan.banerjee", "MooDLD12%23"};
-        LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
-        loginAsyncTask.execute(login_details);
+        login=(Button)findViewById(R.id.login);
+
+        login.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                EditText ed1 = (EditText) findViewById(R.id.name);
+                EditText ed2 = (EditText) findViewById(R.id.pass);
+                try {
+                    String username = URLEncoder.encode(ed1.getText().toString(), "UTF-8");
+                    String password = URLEncoder.encode(ed2.getText().toString(), "UTF-8");
+                    Log.d("Login", "Username: " + username + " Password: " + password);
+
+                    String[] login_details = {username, password};
+                    LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
+                    loginAsyncTask.execute(login_details);
+
+                } catch (UnsupportedEncodingException e) {
+                    Log.e(TAG, "UnsupportedEncodingException");
+                } catch (NullPointerException npe) {
+                    npe.printStackTrace();
+                }
+            }
+        });
     }
 
     private class LoginAsyncTask extends AsyncTask<String, Void, Void> {
