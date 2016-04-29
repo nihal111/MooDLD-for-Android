@@ -38,7 +38,7 @@ public class LoginActivity extends AppCompatActivity {
     private final String loginPageUrl = "http://moodle.iitb.ac.in/login/index.php";
     private final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private final String TAG = "LoginActivity";
-    Button login;
+    private Button login;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
