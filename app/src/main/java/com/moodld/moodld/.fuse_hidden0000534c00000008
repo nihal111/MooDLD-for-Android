@@ -146,8 +146,6 @@ public class LoginActivity extends AppCompatActivity {
             JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
             jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
             SaveLoginDetails(username, password, sessionCookie);
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
         }
     }
 
@@ -158,7 +156,6 @@ public class LoginActivity extends AppCompatActivity {
         editor.putString("password", password);
         editor.putString("MoodleSession", MoodleSession);
         editor.apply();
-        Log.d(TAG, "Saved Login Details.");
     }
 
     private class JsoupAsyncTask extends AsyncTask<String, String, Void> {
@@ -191,7 +188,6 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
-    //For debugging purposes
     class LoggingInterceptor implements Interceptor {
         @Override public Response intercept(Interceptor.Chain chain) throws IOException {
             Request request = chain.request();

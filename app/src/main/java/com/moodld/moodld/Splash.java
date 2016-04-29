@@ -150,10 +150,12 @@ public class Splash extends AppCompatActivity {
             editor.putString("MoodleSession", sessionCookie);
             editor.apply();
             handlerneeded = false;
+            Log.d(TAG, "Login Successful");
             Log.d(TAG, "Username = " + username);
             Log.d(TAG, "Password = " + password);
             Log.d(TAG, "Session Cookie = " + sessionCookie);
-            Toast.makeText(Splash.this, "Login successful", Toast.LENGTH_SHORT).show();
+            Intent intent = new Intent(Splash.this, MainActivity.class);
+            startActivity(intent);
         }
     }
 }
