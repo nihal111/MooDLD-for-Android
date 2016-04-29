@@ -156,7 +156,6 @@ public class LoginActivity extends AppCompatActivity {
         editor.putString("password", password);
         editor.putString("MoodleSession", MoodleSession);
         editor.apply();
-        Log.d(TAG, "Saved Login Details.");
     }
 
     private class JsoupAsyncTask extends AsyncTask<String, String, Void> {
