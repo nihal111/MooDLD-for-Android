@@ -11,10 +11,24 @@ import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
+import okhttp3.Cookie;
+import okhttp3.CookieJar;
+import okhttp3.FormBody;
+import okhttp3.HttpUrl;
+import okhttp3.Interceptor;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 public class LoginActivity extends AppCompatActivity {
 
-    private String htmlPageUrl = "http://www.google.com/";
+    private final String loginPageUrl = "http://moodle.iitb.ac.in/login/index.php";
+    private final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private final String TAG = "LoginActivity";
 
     @Override
@@ -22,12 +36,85 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
-        jsoupAsyncTask.execute(htmlPageUrl);
-
+        String[] login_details = {"arpan.banerjee", "MooDLD12%23"};
+        LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
+        loginAsyncTask.execute(login_details);
     }
 
-    private class JsoupAsyncTask extends AsyncTask<String, Void, Void> {
+    private class LoginAsyncTask extends AsyncTask<String, Void, Void> {
+
+        public final MediaType MEDIA_TYPE = MediaType.parse("application/x-www-form-urlencoded");
+        private String sessionCookie;
+
+        @Override
+        protected Void doInBackground(String... params) {
+            CookieJar cookieJar = new CookieJar() {
+                private List<Cookie> cookies;
+                @Override
+                public void saveFromResponse(HttpUrl url, List<Cookie> cook) {
+                    try {
+                        //Give me a cookie
+                        cookies = new ArrayList<Cookie>();
+                        Cookie c = cook.get(1);
+                        sessionCookie = c.value();
+                        cookies.add(c);
+                        Log.d(TAG, "Cookies = " + sessionCookie);
+                    }
+                    catch (NullPointerException npe) {
+                        npe.printStackTrace();
+                        //This will happen.
+                    }
+                    catch (IndexOutOfBoundsException e) {
+                        e.printStackTrace();
+                        //This will also happen.
+                    }
+                }
+
+                @Override
+                public List<Cookie> loadForRequest(HttpUrl url) {
+                    if(cookies != null) {
+                        return cookies;
+                    }
+                    return new ArrayList<Cookie>();
+                }
+            };
+            OkHttpClient.Builder builder = new OkHttpClient.Builder();
+            builder.cookieJar(cookieJar);
+            builder.addNetworkInterceptor(new LoggingInterceptor());
+            OkHttpClient client = builder.build();
+
+            String postBody = "username=" + params[0] + "&password=" + params[1];
+
+            Request request = new Request.Builder()
+                    .url(loginPageUrl)
+                    .post(RequestBody.create(MEDIA_TYPE, postBody))
+                    .build();
+            try {
+                Response response = client.newCall(request).execute();
+                if (!response.isSuccessful()) {
+                    Log.d(TAG, String.valueOf(response.code()));
+                }
+                else {
+                    Log.d(TAG, String.valueOf(response.code()));
+                    Log.d(TAG, response.body().string());
+                    Log.d(TAG, response.toString());
+                }
+            }
+            catch (IOException ioe){
+                ioe.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void aVoid) {
+            super.onPostExecute(aVoid);
+            JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
+            jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
+        }
+    }
+
+    private class JsoupAsyncTask extends AsyncTask<String, String, Void> {
 
         Elements links;
         Document htmlDocument;
@@ -40,11 +127,8 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected Void doInBackground(String... params) {
             try {
-                String html = "<div role=\"main\"><span id=\"maincontent\"></span><div class=\"course-content\"><h2 class=\"accesshide\">Weekly outline</h2><ul class=\"weeks\"><li id=\"section-0\" class=\"section main clearfix\" role=\"region\" aria-label=\"General\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname accesshide\">General</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity forum modtype_forum \" id=\"module-16787\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/forum/view.php?id=16787\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/forum/1444075825/icon\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">News forum</span></a></div></div></div></div></li></ul></div></li><li id=\"section-1\" class=\"section main clearfix\" role=\"region\" aria-label=\"4 January - 10 January\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">4 January - 10 January</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-2\" class=\"section main clearfix\" role=\"region\" aria-label=\"11 January - 17 January\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">11 January - 17 January</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-17773\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=17773\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">General_Intro_E&amp;M_Lect_1<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li><li class=\"activity resource modtype_resource \" id=\"module-17775\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=17775\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Curvilnear_Coordinates<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li><li class=\"activity resource modtype_resource \" id=\"module-17776\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=17776\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Vector_Calculus_1<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-3\" class=\"section main clearfix\" role=\"region\" aria-label=\"18 January - 24 January\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">18 January - 24 January</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-18249\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=18249\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Vector Calculus Electrostatics Gausss Law<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-4\" class=\"section main clearfix\" role=\"region\" aria-label=\"25 January - 31 January\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">25 January - 31 January</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-19470\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=19470\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Electrostatic_Work_Energy<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-5\" class=\"section main clearfix\" role=\"region\" aria-label=\"1 February - 7 February\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">1 February - 7 February</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-19471\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=19471\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Potential_Conductors_Laplacs_Eqn_Seperation_of_Variables<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-6\" class=\"section main clearfix\" role=\"region\" aria-label=\"8 February - 14 February\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">8 February - 14 February</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-19798\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=19798\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Method of Images<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-7\" class=\"section main clearfix\" role=\"region\" aria-label=\"15 February - 21 February\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">15 February - 21 February</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-8\" class=\"section main clearfix\" role=\"region\" aria-label=\"22 February - 28 February\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">22 February - 28 February</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-9\" class=\"section main clearfix\" role=\"region\" aria-label=\"29 February - 6 March\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">29 February - 6 March</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-20421\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=20421\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Multipole Expansion Dielectrics Part 1<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-10\" class=\"section main clearfix\" role=\"region\" aria-label=\"7 March - 13 March\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">7 March - 13 March</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-21344\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=21344\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Dielectrics Part 2<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-11\" class=\"section main clearfix\" role=\"region\" aria-label=\"14 March - 20 March\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">14 March - 20 March</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-12\" class=\"section main clearfix\" role=\"region\" aria-label=\"21 March - 27 March\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">21 March - 27 March</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-21345\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=21345\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Magnetostatics Amperes Law Vector Potential<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-13\" class=\"section main clearfix\" role=\"region\" aria-label=\"28 March - 3 April\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">28 March - 3 April</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-22289\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=22289\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Magnetic Materials<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-14\" class=\"section main clearfix\" role=\"region\" aria-label=\"4 April - 10 April\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">4 April - 10 April</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-22290\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=22290\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Maxwell’s Equations EM Waves<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-15\" class=\"section main clearfix\" role=\"region\" aria-label=\"11 April - 17 April\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">11 April - 17 April</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-22291\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=22291\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">EM Waves Optics<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-16\" class=\"section main clearfix\" role=\"region\" aria-label=\"18 April - 24 April\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">18 April - 24 April</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-17\" class=\"section main clearfix current\" role=\"region\" aria-label=\"25 April - 1 May\"><div class=\"left side\"><span class=\"accesshide \" >This week</span></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">25 April - 1 May</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-18\" class=\"section main clearfix\" role=\"region\" aria-label=\"2 May - 8 May\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">2 May - 8 May</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-19\" class=\"section main clearfix\" role=\"region\" aria-label=\"9 May - 15 May\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">9 May - 15 May</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-20\" class=\"section main clearfix\" role=\"region\" aria-label=\"16 May - 22 May\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">16 May - 22 May</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-21\" class=\"section main clearfix\" role=\"region\" aria-label=\"23 May - 29 May\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">23 May - 29 May</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-22\" class=\"section main clearfix\" role=\"region\" aria-label=\"30 May - 5 June\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">30 May - 5 June</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-23\" class=\"section main clearfix\" role=\"region\" aria-label=\"6 June - 12 June\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">6 June - 12 June</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-24\" class=\"section main clearfix\" role=\"region\" aria-label=\"13 June - 19 June\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">13 June - 19 June</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-25\" class=\"section main clearfix\" role=\"region\" aria-label=\"20 June - 26 June\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">20 June - 26 June</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-26\" class=\"section main clearfix\" role=\"region\" aria-label=\"27 June - 3 July\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">27 June - 3 July</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li></ul></div></div>                </section>";
-                htmlDocument = Jsoup.connect(params[0]).get();
-                htmlDocument = Jsoup.parse(html);
+                htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[1]).get();
                 links = htmlDocument.select("a[href]");
-
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -60,4 +144,23 @@ public class LoginActivity extends AppCompatActivity {
         }
     }
 
+    class LoggingInterceptor implements Interceptor {
+        @Override public Response intercept(Interceptor.Chain chain) throws IOException {
+            Request request = chain.request();
+
+            long t1 = System.nanoTime();
+            Log.d(TAG, String.format("Sending request %s on %s\n%s\n%s\n%s",
+                    request.url(), chain.connection(), request.method(), request.body(), request.headers()));
+
+            Response response = chain.proceed(request);
+
+            long t2 = System.nanoTime();
+            Log.d(TAG, String.format("Received response for %s in %.1fms%n%s",
+                    response.request().url(), (t2 - t1) / 1e6d, response.headers()));
+
+            return response;
+        }
+    }
+
 }
+
