@@ -1,5 +1,6 @@
 package com.moodld.moodld;
 
+import android.content.Intent;
 import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -29,6 +30,10 @@ public class MainActivity extends AppCompatActivity {
                 editor.putString("MoodleSession", null);
                 editor.commit();
                 Log.d(TAG, "Logged out.");
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+
             }
         });
     }

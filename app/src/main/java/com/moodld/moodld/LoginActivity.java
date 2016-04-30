@@ -147,6 +147,7 @@ public class LoginActivity extends AppCompatActivity {
                 SaveLoginDetails(username, password, sessionCookie);
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
+                finish();
             }
         }
     }
@@ -210,6 +211,11 @@ public class LoginActivity extends AppCompatActivity {
             if (request.url().toString().equals(loginPageUrl)) {
                 if (response.header("Location", null) == null) {
                     Log.d(TAG, "Login details INCORRECT.");
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            Toast.makeText(getApplicationContext(), "Invalid Username or Password!", Toast.LENGTH_LONG).show();
+                        }
+                    });
                     details_correct = false;
                 } else if (response.header("Location", null).startsWith(loginPageUrl + "?testsession")) {
                     Log.d(TAG, "Login details CORRECT");

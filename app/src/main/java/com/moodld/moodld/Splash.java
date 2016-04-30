@@ -41,6 +41,8 @@ public class Splash extends AppCompatActivity {
                     started=false;
                     Intent intent = new Intent(Splash.this, LoginActivity.class);
                     startActivity(intent);
+                    finish();
+
                 }
                 handler.post(this);
             }
@@ -156,6 +158,7 @@ public class Splash extends AppCompatActivity {
             Log.d(TAG, "Session Cookie = " + sessionCookie);
             Intent intent = new Intent(Splash.this, MainActivity.class);
             startActivity(intent);
+            finish();
         }
     }
 }
