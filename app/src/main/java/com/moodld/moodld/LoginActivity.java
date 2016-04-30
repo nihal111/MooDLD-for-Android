@@ -41,13 +41,14 @@ public class LoginActivity extends AppCompatActivity {
     private final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private final String TAG = "LoginActivity";
     private final String PREFS_NAME = "LoginDetails";
+    private boolean details_correct = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        Button login=(Button)findViewById(R.id.login);
+        Button login = (Button) findViewById(R.id.login);
 
         login.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -82,6 +83,7 @@ public class LoginActivity extends AppCompatActivity {
         protected Void doInBackground(String... params) {
             CookieJar cookieJar = new CookieJar() {
                 private List<Cookie> cookies;
+
                 @Override
                 public void saveFromResponse(HttpUrl url, List<Cookie> cook) {
                     try {
@@ -91,12 +93,10 @@ public class LoginActivity extends AppCompatActivity {
                         sessionCookie = c.value();
                         cookies.add(c);
                         Log.d(TAG, "Cookies = " + sessionCookie);
-                    }
-                    catch (NullPointerException npe) {
+                    } catch (NullPointerException npe) {
                         npe.printStackTrace();
                         //This will happen.
-                    }
-                    catch (IndexOutOfBoundsException e) {
+                    } catch (IndexOutOfBoundsException e) {
                         e.printStackTrace();
                         //This will also happen.
                     }
@@ -104,7 +104,7 @@ public class LoginActivity extends AppCompatActivity {
 
                 @Override
                 public List<Cookie> loadForRequest(HttpUrl url) {
-                    if(cookies != null) {
+                    if (cookies != null) {
                         return cookies;
                     }
                     return new ArrayList<Cookie>();
@@ -127,14 +127,12 @@ public class LoginActivity extends AppCompatActivity {
                 Response response = client.newCall(request).execute();
                 if (!response.isSuccessful()) {
                     Log.d(TAG, String.valueOf(response.code()));
-                }
-                else {
+                } else {
                     Log.d(TAG, String.valueOf(response.code()));
                     Log.d(TAG, response.body().string());
                     Log.d(TAG, response.toString());
                 }
-            }
-            catch (IOException ioe){
+            } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
             return null;
@@ -143,11 +141,13 @@ public class LoginActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
-            JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
-            jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
-            SaveLoginDetails(username, password, sessionCookie);
-            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-            startActivity(intent);
+            if (details_correct) {
+                JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
+                jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
+                SaveLoginDetails(username, password, sessionCookie);
+                Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                startActivity(intent);
+            }
         }
     }
 
@@ -186,14 +186,15 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             Log.d(TAG, htmlDocument.toString());
             for (Element link : links) {
-                Log.d(TAG,link.attr("abs:href")+ " " + link.text());
+                Log.d(TAG, link.attr("abs:href") + " " + link.text());
             }
         }
     }
 
     //For debugging purposes
     class LoggingInterceptor implements Interceptor {
-        @Override public Response intercept(Interceptor.Chain chain) throws IOException {
+        @Override
+        public Response intercept(Interceptor.Chain chain) throws IOException {
             Request request = chain.request();
 
             long t1 = System.nanoTime();
@@ -205,6 +206,16 @@ public class LoginActivity extends AppCompatActivity {
             long t2 = System.nanoTime();
             Log.d(TAG, String.format("Received response for %s in %.1fms%n%s",
                     response.request().url(), (t2 - t1) / 1e6d, response.headers()));
+
+            if (request.url().toString().equals(loginPageUrl)) {
+                if (response.header("Location", null) == null) {
+                    Log.d(TAG, "Login details INCORRECT.");
+                    details_correct = false;
+                } else if (response.header("Location", null).startsWith(loginPageUrl + "?testsession")) {
+                    Log.d(TAG, "Login details CORRECT");
+                    details_correct = true;
+                }
+            }
 
             return response;
         }

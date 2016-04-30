@@ -25,7 +25,7 @@ import okhttp3.Response;
 public class Splash extends AppCompatActivity {
 
     private Handler handler = new Handler();
-    private Boolean handlerneeded = false, started = false;
+    private boolean handlerneeded = false, started = false;
     private Long stime, timeout_time=5000L;
     private Runnable timeout = new Runnable(){
         public void run() {
