@@ -8,6 +8,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import org.jsoup.Jsoup;
@@ -86,9 +87,20 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             for (Element link : links) {
-                if(link.attr("abs:href").startsWith("http://moodle.iitb.ac.in/course")) {
+                if(link.attr("abs:href").startsWith(mainPageUrl + "course")) {
                     downloadLinks.add(link.attr("abs:href"));
                     courseNames.add(link.text().substring(0,6));
+                }
+                else if(link.attr("abs:href").startsWith(mainPageUrl + "user/profile.php")) {
+                    final String myname = link.text();
+                    Log.d(TAG, myname);
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            TextView nameTV = (TextView)findViewById(R.id.nameTextView);
+                            nameTV.setText("Welcome, " + myname);
+                        }
+                    });
                 }
             }
             Log.d(TAG, downloadLinks.toString());
