@@ -142,8 +142,6 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             if (details_correct) {
-                JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
-                jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
                 SaveLoginDetails(username, password, sessionCookie);
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
@@ -159,36 +157,6 @@ public class LoginActivity extends AppCompatActivity {
         editor.putString("MoodleSession", MoodleSession);
         editor.apply();
         Log.d(TAG, "Saved Login Details.");
-    }
-
-    private class JsoupAsyncTask extends AsyncTask<String, String, Void> {
-
-        Elements links;
-        Document htmlDocument;
-
-        @Override
-        protected void onPreExecute() {
-            super.onPreExecute();
-        }
-
-        @Override
-        protected Void doInBackground(String... params) {
-            try {
-                htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[1]).get();
-                links = htmlDocument.select("a[href]");
-            } catch (IOException e) {
-                e.printStackTrace();
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void result) {
-            Log.d(TAG, htmlDocument.toString());
-            for (Element link : links) {
-                Log.d(TAG, link.attr("abs:href") + " " + link.text());
-            }
-        }
     }
 
     //For debugging purposes
