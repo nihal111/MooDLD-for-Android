@@ -54,6 +54,10 @@ public class MainActivity extends AppCompatActivity {
                 editor.putString("MoodleSession", null);
                 editor.apply();
                 Log.d(TAG, "Logged out.");
+                Intent intent = new Intent(MainActivity.this, LoginActivity.class);
+                startActivity(intent);
+                finish();
+
             }
         });
     }
