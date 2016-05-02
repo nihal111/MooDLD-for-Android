@@ -4,11 +4,14 @@ import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.drawable.ColorDrawable;
 import android.os.AsyncTask;
 import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
@@ -16,6 +19,7 @@ import android.util.Log;
 import android.view.View;
 import android.webkit.CookieManager;
 import android.widget.Button;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -46,6 +50,7 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
+    private ProgressBar progressBar;
     private Button logout, dld, preferences;
     private static final String TAG = "MainActivity";
     private String sessionCookie = null;
@@ -72,6 +77,8 @@ public class MainActivity extends AppCompatActivity {
         logout = (Button) findViewById(R.id.logout);
         dld = (Button) findViewById(R.id.dld);
         preferences = (Button) findViewById(R.id.preferences);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.INVISIBLE);
 
 
         logout.setOnClickListener(new View.OnClickListener() {
@@ -130,14 +137,14 @@ public class MainActivity extends AppCompatActivity {
         new DownloadFileFromURL().execute(file_url, address);
     }
 
-    class DownloadFileFromURL extends AsyncTask<String, String, String> {
+    class DownloadFileFromURL extends AsyncTask<String, Integer, String> {
 
         /**
          * Before starting background thread Show Progress Bar Dialog
          */
         @Override
         protected void onPreExecute() {
-            super.onPreExecute();
+            progressBar.setVisibility(View.VISIBLE);
         }
 
         /**
@@ -155,7 +162,17 @@ public class MainActivity extends AppCompatActivity {
                 Request request = new Request.Builder().url(params[0])
                         .addHeader("Cookie", "MoodleSession=" + sessionCookie)
                         .build();
-                Response response = client.newCall(request).execute();
+                final Response response = client.newCall(request).execute();
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            progressBar.setMax(Integer.parseInt(response.header("Content-Length")));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
 
                 InputStream is = response.body().byteStream();
 
@@ -170,6 +187,7 @@ public class MainActivity extends AppCompatActivity {
 
                 while ((count = input.read(data)) != -1) {
                     total += count;
+                    publishProgress((int)total);
                     output.write(data, 0, count);
                 }
 
@@ -221,10 +239,16 @@ public class MainActivity extends AppCompatActivity {
             return null;
         }
 
+        @Override
+        protected void onProgressUpdate(Integer... values) {
+            progressBar.setProgress(values[0]);
+        }
 
         @Override
         protected void onPostExecute(String file_url) {
             Log.d(TAG, "Download completed");
+            progressBar.setProgress(0);
+            progressBar.setVisibility(View.INVISIBLE);
         }
 
     }
