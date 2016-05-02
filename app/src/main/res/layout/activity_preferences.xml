@@ -20,8 +20,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="2"
-            android:text="Root Directory"
-            android:onClick="RootDirectorySelect"/>
+            android:onClick="RootDirectorySelect"
+            android:text="Root Directory" />
 
         <TextView
             android:id="@+id/root_dir_value"
@@ -44,13 +44,15 @@
             android:id="@+id/select_all"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:contentDescription="Select All" />
+            android:contentDescription="Select All"
+            android:onClick="SelectAll" />
 
         <ImageButton
             android:id="@+id/deselect_all"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:contentDescription="Deselect All"
+            android:onClick="DeselectAll"
             android:paddingLeft="20dp"
             android:paddingStart="20dp" />
 
@@ -63,10 +65,10 @@
     </LinearLayout>
 
     <ListView
+        android:id="@+id/listView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/listView"
-        android:layout_below="@+id/selection_panel"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
+        android:layout_alignParentStart="true"
+        android:layout_below="@+id/selection_panel" />
 </RelativeLayout>

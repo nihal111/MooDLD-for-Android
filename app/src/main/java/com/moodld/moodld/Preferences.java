@@ -34,12 +34,15 @@ public class Preferences extends AppCompatActivity {
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
+    private ListView listView;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         LayoutInflaterCompat.setFactory(getLayoutInflater(), new IconicsLayoutInflater(getDelegate()));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preferences);
+
+        listView = (ListView) findViewById(R.id.listView);
 
         ImageButton select_all = (ImageButton) findViewById(R.id.select_all);
         ImageButton deselect_all = (ImageButton) findViewById(R.id.deselect_all);
@@ -53,7 +56,7 @@ public class Preferences extends AppCompatActivity {
                     .color(Color.BLACK)
                     .sizeDp(24));
         } catch (NullPointerException npe) {
-            Log.d(TAG, "Icons not found");
+            npe.printStackTrace();
         }
 
         SharedPreferences preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
@@ -66,6 +69,16 @@ public class Preferences extends AppCompatActivity {
             Intent intent = new Intent(Preferences.this, LoginActivity.class);
             startActivity(intent);
         }
+
+    }
+
+    public void SelectAll(View view) {
+        for(int i=0 ; i<listView.getAdapter().getCount() ; i++) {
+            listView.setItemChecked(i, true);
+        }
+    }
+
+    public void DeselectAll(View view) {
 
     }
 
@@ -119,7 +132,6 @@ public class Preferences extends AppCompatActivity {
                 @Override
                 public void run() {
                     PrefListAdapter adapter = new PrefListAdapter(courseNames, Preferences.this);
-                    ListView listView = (ListView) findViewById(R.id.listView);
                     listView.setAdapter(adapter);
                 }
             });

@@ -162,6 +162,7 @@ public class MainActivity extends AppCompatActivity {
 
                 //this is the total size of the file which we are downloading
                 int totalSize = urlConnection.getContentLength();
+                Log.d(TAG, "Total Size = " + String.valueOf(totalSize));
 
                 //create a buffer...
                 byte[] buffer = new byte[1024];
