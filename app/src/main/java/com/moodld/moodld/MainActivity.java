@@ -3,8 +3,12 @@ package com.moodld.moodld;
 import android.app.DownloadManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.annotation.NonNull;
+import android.support.v4.app.ActivityCompat;
+import android.support.v4.content.ContextCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -31,24 +35,28 @@ import java.io.OutputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.jar.Manifest;
 
 public class MainActivity extends AppCompatActivity {
 
     private Button logout;
-    private static final String TAG="MainActivity";
+    private static final String TAG = "MainActivity";
     private String sessionCookie = null;
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
+    private final int MY_PERMISSIONS_REQUEST_READ_CONTACTS = 0;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
+        getWritePermission();
+
         SharedPreferences preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
         String sessionCookie = preferences.getString("MoodleSession", null);
-        if(sessionCookie != null) {
+        if (sessionCookie != null) {
             JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
             jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
         } else {
@@ -56,7 +64,7 @@ public class MainActivity extends AppCompatActivity {
             Intent intent = new Intent(MainActivity.this, LoginActivity.class);
             startActivity(intent);
         }
-        
+
         logout = (Button) findViewById(R.id.logout);
 
         logout.setOnClickListener(new View.OnClickListener() {
@@ -90,7 +98,7 @@ public class MainActivity extends AppCompatActivity {
 
         /**
          * Before starting background thread Show Progress Bar Dialog
-         * */
+         */
         @Override
         protected void onPreExecute() {
             super.onPreExecute();
@@ -98,7 +106,7 @@ public class MainActivity extends AppCompatActivity {
 
         /**
          * Downloading file in background thread
-         * */
+         */
         @Override
         protected String doInBackground(String... params) {
             int count;
@@ -107,14 +115,15 @@ public class MainActivity extends AppCompatActivity {
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setDoOutput(true);
-                urlConnection.setRequestProperty("Cookie", "MoodleSession="+sessionCookie);
+                urlConnection.setRequestProperty("Cookie", "MoodleSession=" + sessionCookie);
                 urlConnection.connect();
 
 
                 //set the path where we want to save the file
                 File SDCardRoot = Environment.getExternalStorageDirectory();
                 //create a new file, to save the downloaded file
-                File file = new File(SDCardRoot,"downloaded_file.pdf");
+                File file = new File(SDCardRoot, "downloaded_file.pdf");
+                Log.d(TAG, "Downloading " + url + " to " + file.getAbsolutePath());
 
                 FileOutputStream fileOutput = new FileOutputStream(file);
 
@@ -128,7 +137,7 @@ public class MainActivity extends AppCompatActivity {
                 byte[] buffer = new byte[1024];
                 int bufferLength = 0;
 
-                while ( (bufferLength = inputStream.read(buffer)) > 0 ) {
+                while ((bufferLength = inputStream.read(buffer)) > 0) {
                     fileOutput.write(buffer, 0, bufferLength);
 
                 }
@@ -146,9 +155,35 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(String file_url) {
             Log.d(TAG, "Download completed");
-
         }
 
+    }
+
+    public void getWritePermission() {
+        if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                != PackageManager.PERMISSION_GRANTED) {
+            Log.d(TAG, "Write Storage permission not given.");
+            ActivityCompat.requestPermissions(MainActivity.this, new String[]{android.Manifest.permission.WRITE_EXTERNAL_STORAGE},
+                    MY_PERMISSIONS_REQUEST_READ_CONTACTS);
+        }
+        else {
+            Log.d(TAG, "Write storage permission given.");
+        }
+    }
+
+    @Override
+    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
+        switch (requestCode) {
+            case MY_PERMISSIONS_REQUEST_READ_CONTACTS:
+                if(grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                    Log.d(TAG, "Write Storage Permission Granted.");
+                }
+                else {
+                    Log.d(TAG, "Write Storage Permission denied.");
+                    Toast.makeText(MainActivity.this, "You need to allow this permission to download files!", Toast.LENGTH_SHORT).show();
+                    getWritePermission();
+                }
+        }
     }
 
     private class JsoupAsyncTask extends AsyncTask<String, String, Void> {
@@ -175,17 +210,16 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             for (Element link : links) {
-                if(link.attr("abs:href").startsWith(mainPageUrl + "course")) {
+                if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
                     downloadLinks.add(link.attr("abs:href"));
-                    courseNames.add(link.text().substring(0,6));
-                }
-                else if(link.attr("abs:href").startsWith(mainPageUrl + "user/profile.php")) {
+                    courseNames.add(link.text().substring(0, 6));
+                } else if (link.attr("abs:href").startsWith(mainPageUrl + "user/profile.php")) {
                     final String myname = link.text();
                     Log.d(TAG, myname);
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            TextView nameTV = (TextView)findViewById(R.id.nameTextView);
+                            TextView nameTV = (TextView) findViewById(R.id.nameTextView);
                             nameTV.setText("Welcome, " + myname);
                         }
                     });
