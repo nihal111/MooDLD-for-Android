@@ -92,8 +92,12 @@ public class Preferences extends AppCompatActivity {
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         switch (requestCode) {
             case PICKFILE_REQUEST_CODE:
-                String Fpath = data.getDataString();
-                Log.d(TAG, Fpath);
+                try {
+                    String Fpath = data.getDataString();
+                    Log.d(TAG, Fpath);
+                } catch (NullPointerException npe) {
+                    //Cancelled dialog.
+                }
         }
     }
 

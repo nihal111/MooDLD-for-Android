@@ -148,6 +148,8 @@ public class MainActivity extends AppCompatActivity {
                 urlConnection.setRequestProperty("Cookie", "MoodleSession=" + sessionCookie);
                 urlConnection.connect();
 
+                Log.d(TAG, String.valueOf(urlConnection.getResponseCode()));
+
 
                 //set the path where we want to save the file
                 File SDCardRoot = Environment.getExternalStorageDirectory();
