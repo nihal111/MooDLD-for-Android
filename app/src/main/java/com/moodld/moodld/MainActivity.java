@@ -38,6 +38,11 @@ import java.net.URL;
 import java.net.URLConnection;
 import java.util.jar.Manifest;
 
+import okhttp3.Call;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
+
 public class MainActivity extends AppCompatActivity {
 
     private Button logout, dld, preferences;
@@ -118,8 +123,8 @@ public class MainActivity extends AppCompatActivity {
     //onClick of "DLD Files" button
     private void dldfiles() {
         Log.d(TAG, "DLD Files");
-        String file_url = "http://moodle.iitb.ac.in/pluginfile.php/53165/mod_resource/content/0/PH_108_Kumar_ppt.pdf";
-        String address = Environment.getExternalStorageDirectory().toString() + "/nihal";
+        String file_url = "http://www.axmag.com/download/pdfurl-guide.pdf";
+        String address = "downloaded_file.pdf";
         //Download call
         new DownloadFileFromURL().execute(file_url, address);
     }
@@ -142,6 +147,34 @@ public class MainActivity extends AppCompatActivity {
             int count;
             try {
                 URL url = new URL(params[0]);
+
+                OkHttpClient client = new OkHttpClient();
+                Request request = new Request.Builder().url(params[0])
+                        .addHeader("Cookie", "MoodleSession="+ sessionCookie)
+                        .build();
+                Response response = client.newCall(request).execute();
+
+                InputStream is = response.body().byteStream();
+
+                BufferedInputStream input = new BufferedInputStream(is);
+                File SDCardRoot = Environment.getExternalStorageDirectory();
+                File file = new File(SDCardRoot, params[1]);
+                OutputStream output = new FileOutputStream(file);
+
+                byte[] data = new byte[1024];
+
+                long total = 0;
+
+                while ((count = input.read(data)) != -1) {
+                    total += count;
+                    output.write(data, 0, count);
+                }
+
+                output.flush();
+                output.close();
+                input.close();
+
+                /*
                 HttpURLConnection urlConnection = (HttpURLConnection) url.openConnection();
                 urlConnection.setRequestMethod("GET");
                 urlConnection.setDoOutput(true);
@@ -152,7 +185,7 @@ public class MainActivity extends AppCompatActivity {
                 //set the path where we want to save the file
                 File SDCardRoot = Environment.getExternalStorageDirectory();
                 //create a new file, to save the downloaded file
-                File file = new File(SDCardRoot, "downloaded_file.pdf");
+                File file = new File(SDCardRoot, params[1]);
                 Log.d(TAG, "Downloading " + url + " to " + file.getAbsolutePath());
 
                 FileOutputStream fileOutput = new FileOutputStream(file);
@@ -173,6 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 }
                 //close the output stream when complete //
                 fileOutput.close();
+                */
 
             } catch (Exception e) {
                 Log.e("Error: ", e.getMessage());
