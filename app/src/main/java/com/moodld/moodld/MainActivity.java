@@ -39,6 +39,7 @@ import java.net.URLConnection;
 import java.util.jar.Manifest;
 
 import okhttp3.Call;
+import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
 import okhttp3.Response;
@@ -59,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         SharedPreferences prefs = getSharedPreferences("LoginDetails", MODE_PRIVATE);
-        String sessionCookie = prefs.getString("MoodleSession", null);
+        sessionCookie = prefs.getString("MoodleSession", null);
         if (sessionCookie != null) {
             JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
             jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
@@ -123,7 +124,7 @@ public class MainActivity extends AppCompatActivity {
     //onClick of "DLD Files" button
     private void dldfiles() {
         Log.d(TAG, "DLD Files");
-        String file_url = "http://www.axmag.com/download/pdfurl-guide.pdf";
+        String file_url = "http://moodle.iitb.ac.in/pluginfile.php/53165/mod_resource/content/0/PH_108_Kumar_ppt.pdf";
         String address = "downloaded_file.pdf";
         //Download call
         new DownloadFileFromURL().execute(file_url, address);
@@ -148,9 +149,11 @@ public class MainActivity extends AppCompatActivity {
             try {
                 URL url = new URL(params[0]);
 
-                OkHttpClient client = new OkHttpClient();
+                OkHttpClient.Builder builder = new OkHttpClient.Builder();
+                builder.addNetworkInterceptor(new LoggingInterceptor());
+                OkHttpClient client = builder.build();
                 Request request = new Request.Builder().url(params[0])
-                        .addHeader("Cookie", "MoodleSession="+ sessionCookie)
+                        .addHeader("Cookie", "MoodleSession=" + sessionCookie)
                         .build();
                 Response response = client.newCall(request).execute();
 
@@ -334,6 +337,27 @@ public class MainActivity extends AppCompatActivity {
             }
             Log.d(TAG, downloadLinks.toString());
             Log.d(TAG, courseNames.toString());
+        }
+    }
+
+    //For debugging purposes
+    class LoggingInterceptor implements Interceptor {
+        @Override
+        public Response intercept(Interceptor.Chain chain) throws IOException {
+            Request request = chain.request();
+
+            long t1 = System.nanoTime();
+            Log.d(TAG, String.format("Sending request %s on %s\n%s\n%s\n%s",
+                    request.url(), chain.connection(), request.method(), request.body(), request.headers()));
+
+            Response response = chain.proceed(request);
+
+            long t2 = System.nanoTime();
+            Log.d(TAG, String.format("Received response for %s in %.1fms%n%s",
+                    response.request().url(), (t2 - t1) / 1e6d, response.headers()));
+
+
+            return response;
         }
     }
 
