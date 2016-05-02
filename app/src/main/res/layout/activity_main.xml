@@ -35,4 +35,25 @@
         android:background="@drawable/rounded_button"
         android:singleLine="false" />
 
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="Preferences"
+        android:id="@+id/preferences"
+        android:layout_above="@id/logout"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/rounded_button"
+        android:singleLine="false" />
+    <Button
+        android:layout_width="200dp"
+        android:layout_height="wrap_content"
+        android:text="DLD files"
+        android:id="@+id/dld"
+        android:layout_above="@id/preferences"
+        android:layout_centerHorizontal="true"
+        android:layout_marginBottom="20dp"
+        android:background="@drawable/rounded_button"
+        android:singleLine="false" />
+
 </RelativeLayout>
