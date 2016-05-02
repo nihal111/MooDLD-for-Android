@@ -142,8 +142,8 @@ public class LoginActivity extends AppCompatActivity {
         protected void onPostExecute(Void aVoid) {
             super.onPostExecute(aVoid);
             if (details_correct) {
-                JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
-                jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
+                //JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
+                //jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
                 SaveLoginDetails(username, password, sessionCookie);
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);

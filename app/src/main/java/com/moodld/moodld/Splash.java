@@ -49,7 +49,7 @@ public class Splash extends AppCompatActivity {
         }
     };
 
-    private static final String TAG="Splash";
+    private static final String TAG = "Splash";
     private final String loginPageUrl = "http://moodle.iitb.ac.in/login/index.php";
     private String sessionCookie = "";
 
@@ -150,7 +150,7 @@ public class Splash extends AppCompatActivity {
             SharedPreferences prefs = Splash.this.getSharedPreferences("LoginDetails", MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString("MoodleSession", sessionCookie);
-            editor.apply();
+            editor.commit();
             handlerneeded = false;
             Log.d(TAG, "Login Successful");
             Log.d(TAG, "Username = " + username);
