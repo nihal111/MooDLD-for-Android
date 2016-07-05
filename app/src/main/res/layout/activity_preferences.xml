@@ -33,36 +33,41 @@
 
     </LinearLayout>
 
-    <LinearLayout
-        android:id="@+id/selection_panel"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_below="@id/root_dir"
-        android:orientation="horizontal">
-
-        <ImageButton
-            android:id="@+id/select_all"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="Select All"
-            android:onClick="SelectAll" />
-
-        <ImageButton
-            android:id="@+id/deselect_all"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="Deselect All"
-            android:onClick="DeselectAll"
-            android:layout_marginLeft="20dp" />
 
         <Button
             android:id="@+id/save_button"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="Save"
-            android:layout_marginLeft="20dp"/>
+            android:onClick="Save"
+            android:layout_alignTop="@+id/deselect_all"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true" />
 
-    </LinearLayout>
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/select_all"
+            android:text="@string/select"
+            android:layout_above="@+id/listView"
+            android:layout_toLeftOf="@+id/deselect_all"
+            android:layout_toStartOf="@+id/deselect_all"
+            android:layout_marginRight="20dp"
+            android:layout_marginEnd="20dp"
+            android:onClick="SelectAll" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/deselect_all"
+            android:text="@string/deselect"
+            android:layout_below="@+id/root_dir"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
+            android:onClick="DeselectAll"/>
+
 
     <ListView
         android:id="@+id/listView"
@@ -70,5 +75,5 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/selection_panel" />
+        android:layout_below="@+id/save_button" />
 </RelativeLayout>

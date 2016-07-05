@@ -3,6 +3,7 @@ package com.moodld.moodld;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
 import android.support.v4.view.LayoutInflaterCompat;
@@ -11,6 +12,10 @@ import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.CheckBox;
 import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -29,6 +34,7 @@ import org.jsoup.select.Elements;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 
 public class Preferences extends AppCompatActivity {
 
@@ -38,32 +44,45 @@ public class Preferences extends AppCompatActivity {
     private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
     private ListView listView;
+    private Course[] courses;
+    private ArrayAdapter<Course> listAdapter ;
     private TextView root_dir_value;
+    ArrayList<Course> CourseList = new ArrayList<Course>();
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        Typeface font = Typeface.createFromAsset( getAssets(), "fontawesome-webfont.ttf" );
         LayoutInflaterCompat.setFactory(getLayoutInflater(), new IconicsLayoutInflater(getDelegate()));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preferences);
 
         root_dir_value = (TextView) findViewById(R.id.root_dir_value);
-        listView = (ListView) findViewById(R.id.listView);
 
-        ImageButton select_all = (ImageButton) findViewById(R.id.select_all);
-        ImageButton deselect_all = (ImageButton) findViewById(R.id.deselect_all);
+        // Find the ListView resource.
+        listView = (ListView) findViewById( R.id.listView );
+
+        // When item is tapped, toggle checked properties of CheckBox and Planet.
+        listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
+            @Override
+            public void onItemClick( AdapterView<?> parent, View item,
+                                     int position, long id) {
+                Course course = listAdapter.getItem( position );
+                course.toggleChecked();
+                CourseViewHolder viewHolder = (CourseViewHolder) item.getTag();
+                viewHolder.getCheckBox().setChecked( course.isChecked() );
+                Log.d(TAG, CourseList.toString());
+            }
+        });
+
+        Button select_all = (Button) findViewById(R.id.select_all);
+        Button deselect_all = (Button) findViewById(R.id.deselect_all);
         try {
-            select_all.setBackground(new IconicsDrawable(this)
-                    .icon(FontAwesome.Icon.faw_check_square_o)
-                    .color(Color.BLACK)
-                    .sizeDp(24));
-            deselect_all.setBackground(new IconicsDrawable(this)
-                    .icon(FontAwesome.Icon.faw_times)
-                    .color(Color.BLACK)
-                    .sizeDp(24));
-        } catch (NullPointerException npe) {
-            npe.printStackTrace();
+            select_all.setTypeface(font);
+            deselect_all.setTypeface(font);
+        } catch (NullPointerException e){
+            Log.e(TAG, e.getStackTrace().toString());
         }
-
         SharedPreferences preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
         String sessionCookie = preferences.getString("MoodleSession", null);
 //        if (sessionCookie != null) {
@@ -80,12 +99,22 @@ public class Preferences extends AppCompatActivity {
     }
 
     public void SelectAll(View view) {
-        for(int i=0 ; i<listView.getAdapter().getCount() ; i++) {
-            listView.setItemChecked(i, true);
+        for (int i = 0; i < listView.getAdapter().getCount(); i++) {
+            Course course = listAdapter.getItem( i );
+            course.setChecked(Boolean.TRUE);
         }
+        listView.setAdapter(listAdapter);
     }
 
     public void DeselectAll(View view) {
+        for (int i = 0; i < listView.getAdapter().getCount(); i++) {
+            Course course = listAdapter.getItem( i );
+            course.setChecked(Boolean.FALSE);
+        }
+        listView.setAdapter(listAdapter);
+    }
+
+    public void Save(View view) {
 
     }
 
@@ -143,19 +172,21 @@ public class Preferences extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
+            Course course;
             for (Element link : links) {
                 if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
                     downloadLinks.add(link.attr("abs:href"));
                     courseNames.add(link.text());
+                    course = new Course(link.text(),link.attr("abs:href"));
+                    CourseList.add(course);
                 }
             }
-            Log.d(TAG, downloadLinks.toString());
-            Log.d(TAG, courseNames.toString());
+            Log.d(TAG, CourseList.toString());
             runOnUiThread(new Runnable() {
                 @Override
                 public void run() {
-                    PrefListAdapter adapter = new PrefListAdapter(courseNames, Preferences.this);
-                    listView.setAdapter(adapter);
+                    listAdapter = new CourseArrayAdapter(Preferences.this, CourseList);
+                    listView.setAdapter(listAdapter);
                 }
             });
         }
