@@ -151,7 +151,7 @@ public class LoginActivity extends AppCompatActivity {
     }
 
     private void SaveLoginDetails(String username, String password, String MoodleSession) {
-        SharedPreferences preferences = LoginActivity.this.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences preferences = LoginActivity.this.getSharedPreferences("LoginDetails", Context.MODE_PRIVATE);
         SharedPreferences.Editor editor = preferences.edit();
         editor.putString("username", username);
         editor.putString("password", password);
