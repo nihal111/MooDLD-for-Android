@@ -40,6 +40,7 @@ public class DLD_files extends AppCompatActivity {
             Log.d(TAG, "Session cookie not present");
             Intent intent = new Intent(DLD_files.this, LoginActivity.class);
             startActivity(intent);
+            finish();
         }
 
         coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
