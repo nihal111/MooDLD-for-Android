@@ -105,8 +105,8 @@ public class Preferences extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
-        JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
-        jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
+//        JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
+//        jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
 
     }
 
