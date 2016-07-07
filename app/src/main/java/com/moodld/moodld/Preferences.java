@@ -133,6 +133,9 @@ public class Preferences extends AppCompatActivity {
         prefsEditor.putString("CourseList", json);
         prefsEditor.commit();
         Log.d(TAG, json);
+        Intent intent = new Intent(Preferences.this, MainActivity.class);
+        startActivity(intent);
+        finish();
     }
 
     public void RootDirectorySelect(View view) {
