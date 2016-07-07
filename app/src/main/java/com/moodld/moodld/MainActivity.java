@@ -131,10 +131,13 @@ public class MainActivity extends AppCompatActivity {
     //onClick of "DLD Files" button
     private void dldfiles() {
         Log.d(TAG, "DLD Files");
-        String file_url = "http://moodle.iitb.ac.in/pluginfile.php/53165/mod_resource/content/0/PH_108_Kumar_ppt.pdf";
-        String address = "downloaded_file.pdf";
-        //Download call
-        new DownloadFileFromURL().execute(file_url, address);
+        Intent intent = new Intent(MainActivity.this, DLD_files.class);
+        startActivity(intent);
+//        String file_url = "http://moodle.iitb.ac.in/pluginfile.php/53165/mod_resource/content/0/PH_108_Kumar_ppt.pdf";
+//        String address = "downloaded_file.pdf";
+//        //Download call
+//        new DownloadFileFromURL().execute(file_url, address);
+
     }
 
     class DownloadFileFromURL extends AsyncTask<String, Integer, String> {
