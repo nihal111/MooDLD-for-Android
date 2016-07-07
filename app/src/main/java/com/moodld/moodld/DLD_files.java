@@ -120,7 +120,7 @@ public class DLD_files extends AppCompatActivity {
             for (Element link : links) {
                 if (!link.attr("abs:href").startsWith(mainPageUrl + "logout.php") || !link.attr("abs:href").startsWith(mainPageUrl + "mod/forum") || !link.attr("abs:href").startsWith(mainPageUrl + "my") || !link.attr("abs:href").startsWith(mainPageUrl + "user") || !link.attr("abs:href").startsWith(mainPageUrl + "badges") || !link.attr("abs:href").startsWith(mainPageUrl + "my") || !link.attr("abs:href").startsWith(mainPageUrl + "user") || !link.attr("abs:href").startsWith(mainPageUrl + "calendar")|| !link.attr("abs:href").startsWith(mainPageUrl + "my") || !link.attr("abs:href").startsWith(mainPageUrl + "user") || !link.attr("abs:href").startsWith(mainPageUrl + "grade")|| !link.attr("abs:href").startsWith(mainPageUrl + "my") || !link.attr("abs:href").startsWith(mainPageUrl + "user") || !link.attr("abs:href").startsWith(mainPageUrl + "message")) {
                     DownloadFileFromURL download = new DownloadFileFromURL();
-                    download.execute(course.getUrl(), rootDir+course.getName().substring(0,6));
+                    download.execute(course.getUrl(), course.getName().substring(0,6));
                     Log.d(TAG, link.text() + ": " + link.attr("abs:href"));
                 }
             }
@@ -170,7 +170,7 @@ public class DLD_files extends AppCompatActivity {
 
                 BufferedInputStream input = new BufferedInputStream(is);
                 File SDCardRoot = Environment.getExternalStorageDirectory();
-                File file = new File(SDCardRoot, params[1]);
+                File file = new File(params[1]);
                 OutputStream output = new FileOutputStream(file);
 
                 byte[] data = new byte[1024];

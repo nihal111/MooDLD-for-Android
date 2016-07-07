@@ -6,6 +6,7 @@ import android.graphics.Color;
 import android.graphics.Typeface;
 import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.support.v4.view.LayoutInflaterCompat;
 import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -50,7 +51,7 @@ public class Preferences extends AppCompatActivity {
     private TextView root_dir_value;
     ArrayList<Course> CourseList = new ArrayList<Course>();
     SharedPreferences  coursePrefs;
-
+    String rootDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -64,6 +65,14 @@ public class Preferences extends AppCompatActivity {
         // Find the ListView resource.
         listView = (ListView) findViewById( R.id.listView );
 
+        rootDir = coursePrefs.getString("rootDir", null);
+        if (rootDir == null) {
+            rootDir = Environment.getDataDirectory().toString();
+            root_dir_value.setText(Environment.getDataDirectory().toString());
+            Log.d(TAG,"No saved rootDir. rootDir is now" + rootDir);
+        } else {
+            root_dir_value.setText(rootDir);
+        }
         // When item is tapped, toggle checked properties of CheckBox and Planet.
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
@@ -131,6 +140,7 @@ public class Preferences extends AppCompatActivity {
         Gson gson = new Gson();
         String json = gson.toJson(CourseList);
         prefsEditor.putString("CourseList", json);
+        prefsEditor.putString("rootDir", rootDir);
         prefsEditor.commit();
         Log.d(TAG, json);
         Intent intent = new Intent(Preferences.this, MainActivity.class);
@@ -161,8 +171,10 @@ public class Preferences extends AppCompatActivity {
             if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
                 root_dir_value.setText(data
                         .getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR));
+                rootDir = data
+                        .getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
             } else {
-                root_dir_value.setText("Select a root directory");
+                root_dir_value.setText(rootDir);
             }
         }
     }
@@ -195,7 +207,7 @@ public class Preferences extends AppCompatActivity {
             Course course;
             for (Element link : links) {
                 if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
-                    course = new Course(link.text(),link.attr("abs:href"));
+                    course = new Course(link.text(),link.attr("abs:href"), rootDir + link.text().substring(0,6));
                     Boolean flag = false;
                     for (int i=0; i< CourseList.size(); i++) {
                         if (CourseList.get(i).getUrl().equals(course.getUrl())) {

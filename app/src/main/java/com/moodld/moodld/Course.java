@@ -19,6 +19,14 @@ public class Course {
         this.isChecked = Boolean.FALSE;
     }
 
+    public Course(String name, String url, String path) {
+        this.name = name ;
+        this.url = url;
+        this.path = path;
+        this.newsForumUrl = this.lastMain = this.lastNF = "";
+        this.isChecked = Boolean.FALSE;
+    }
+
     public String getName(){
         return name;
     }
