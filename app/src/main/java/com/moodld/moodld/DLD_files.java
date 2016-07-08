@@ -38,7 +38,7 @@ public class DLD_files extends AppCompatActivity {
     private static final String TAG = "DLD_files";
     private final int REQUEST_DIRECTORY = 0;
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
-    String rootDir = "MooDLD";
+    String rootDir;
     private String sessionCookie;
     ArrayList<Course> CourseList = new ArrayList<Course>();
     ArrayList<String> downloadLinks = new ArrayList<String>();
@@ -78,7 +78,7 @@ public class DLD_files extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
-        rootDir = coursePrefs.getString("rootDir", "MooDLD");
+        rootDir = coursePrefs.getString("rootDir", Environment.getExternalStorageDirectory().getPath());
     }
 
     private void downloadFromCourses() {
@@ -126,7 +126,7 @@ public class DLD_files extends AppCompatActivity {
 //                if (!link.attr("abs:href").startsWith(mainPageUrl + "logout.php") && !link.attr("abs:href").startsWith(mainPageUrl + "mod/forum") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "badges") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "calendar")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "grade")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "message")) {
                 if (link.attr("abs:href").startsWith(mainPageUrl + "mod/resource")) {
                     DownloadFileFromURL download = new DownloadFileFromURL();
-                    download.execute(link.attr("abs:href"), course.getPath() + "/" + link.text());
+                    download.execute(link.attr("abs:href"), course.getName().substring(0, 6) + "/" + link.text());
 //                    downloadLinks.add(course.getUrl());
 //                    fileNames.add(course.getPath() + link.text());
                     Log.d(TAG, link.text() + ": " + link.attr("abs:href"));
@@ -170,6 +170,7 @@ public class DLD_files extends AppCompatActivity {
                     public void run() {
                         try {
                             progressBar.setMax(Integer.parseInt(response.header("Content-Length")));
+                            Log.d(TAG, "Content length = " + response.header("Content-Length"));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
@@ -179,11 +180,16 @@ public class DLD_files extends AppCompatActivity {
                 InputStream is = response.body().byteStream();
 
                 BufferedInputStream input = new BufferedInputStream(is);
-                File ExternalStorageRoot = Environment.getExternalStorageDirectory();
-                params[1] = params[1].replace(" ","");
+//                File ExternalStorageRoot = Environment.getExternalStorageDirectory();
+//                params[1] = params[1].replace(" ","");
                 int endIndex = params[1].lastIndexOf("/");
-                Log.wtf(TAG, params[1].substring(endIndex + 1));
-                File file = new File(ExternalStorageRoot, params[1].substring(endIndex + 1));
+                Log.d(TAG, "Directory = " + params[1].substring(0, endIndex));
+                Log.d(TAG, "File name = " + params[1].substring(endIndex + 1));
+                File directory = new File(rootDir, "MooDLD/" + params[1].substring(0, endIndex));
+                if (!directory.exists()) {
+                    directory.mkdirs();
+                }
+                File file = new File(directory, params[1].substring(endIndex + 1) + ".pdf");
                 Log.d(TAG, "Storage path = " + file.getPath());
                 OutputStream output = new FileOutputStream(file);
 

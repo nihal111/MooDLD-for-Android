@@ -18,7 +18,7 @@
         android:maxHeight="40dp"
         android:layout_centerHorizontal="true"
         android:layout_marginTop="120dp"
-        android:background="@color/moodleDark"
+        android:background="#eee"
         android:max="100" />
 
 </RelativeLayout>
