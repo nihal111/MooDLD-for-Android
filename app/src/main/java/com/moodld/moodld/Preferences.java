@@ -47,15 +47,15 @@ public class Preferences extends AppCompatActivity {
     private final int REQUEST_DIRECTORY = 0;
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private ListView listView;
-    private ArrayAdapter<Course> listAdapter ;
+    private ArrayAdapter<Course> listAdapter;
     private TextView root_dir_value;
     ArrayList<Course> CourseList = new ArrayList<Course>();
-    SharedPreferences  coursePrefs;
+    SharedPreferences coursePrefs;
     String rootDir;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
-        Typeface font = Typeface.createFromAsset( getAssets(), "fontawesome-webfont.ttf" );
+        Typeface font = Typeface.createFromAsset(getAssets(), "fontawesome-webfont.ttf");
         LayoutInflaterCompat.setFactory(getLayoutInflater(), new IconicsLayoutInflater(getDelegate()));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preferences);
@@ -63,25 +63,25 @@ public class Preferences extends AppCompatActivity {
         root_dir_value = (TextView) findViewById(R.id.root_dir_value);
         coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
         // Find the ListView resource.
-        listView = (ListView) findViewById( R.id.listView );
+        listView = (ListView) findViewById(R.id.listView);
 
         rootDir = coursePrefs.getString("rootDir", null);
         if (rootDir == null) {
             rootDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/MooDLD";
             root_dir_value.setText(rootDir);
-            Log.d(TAG,"No saved rootDir. rootDir is now" + rootDir);
+            Log.d(TAG, "No saved rootDir. rootDir is now" + rootDir);
         } else {
             root_dir_value.setText(rootDir);
         }
         // When item is tapped, toggle checked properties of CheckBox and Planet.
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemClick( AdapterView<?> parent, View item,
-                                     int position, long id) {
-                Course course = listAdapter.getItem( position );
+            public void onItemClick(AdapterView<?> parent, View item,
+                                    int position, long id) {
+                Course course = listAdapter.getItem(position);
                 course.toggleChecked();
                 CourseViewHolder viewHolder = (CourseViewHolder) item.getTag();
-                viewHolder.getCheckBox().setChecked( course.isChecked() );
+                viewHolder.getCheckBox().setChecked(course.isChecked());
                 Log.d(TAG, CourseList.toString());
             }
         });
@@ -91,14 +91,15 @@ public class Preferences extends AppCompatActivity {
         try {
             select_all.setTypeface(font);
             deselect_all.setTypeface(font);
-        } catch (NullPointerException e){
+        } catch (NullPointerException e) {
             Log.e(TAG, e.getStackTrace().toString());
         }
 
         String json = coursePrefs.getString("CourseList", null);
         if (json != null) {
             Gson gson = new Gson();
-            Type listType = new TypeToken<List<Course>>(){}.getType();
+            Type listType = new TypeToken<List<Course>>() {
+            }.getType();
             CourseList = (ArrayList<Course>) gson.fromJson(json, listType);
             Log.d(TAG, "Courses fetched from saved data: " + CourseList.toString());
         }
@@ -121,7 +122,7 @@ public class Preferences extends AppCompatActivity {
 
     public void SelectAll(View view) {
         for (int i = 0; i < listView.getAdapter().getCount(); i++) {
-            Course course = listAdapter.getItem( i );
+            Course course = listAdapter.getItem(i);
             course.setChecked(Boolean.TRUE);
         }
         listView.setAdapter(listAdapter);
@@ -129,7 +130,7 @@ public class Preferences extends AppCompatActivity {
 
     public void DeselectAll(View view) {
         for (int i = 0; i < listView.getAdapter().getCount(); i++) {
-            Course course = listAdapter.getItem( i );
+            Course course = listAdapter.getItem(i);
             course.setChecked(Boolean.FALSE);
         }
         listView.setAdapter(listAdapter);
@@ -207,14 +208,14 @@ public class Preferences extends AppCompatActivity {
             Course course;
             for (Element link : links) {
                 if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
-                    course = new Course(link.text(),link.attr("abs:href"), rootDir + "/" + link.text().substring(0,6));
+                    course = new Course(link.text(), link.attr("abs:href"), rootDir + "/" + link.text().substring(0, 6));
                     Boolean flag = false;
-                    for (int i=0; i< CourseList.size(); i++) {
+                    for (int i = 0; i < CourseList.size(); i++) {
                         if (CourseList.get(i).getUrl().equals(course.getUrl())) {
                             flag = true;
                         }
                     }
-                    if (flag==false) {
+                    if (flag == false) {
                         CourseList.add(course);
                     }
                 }
