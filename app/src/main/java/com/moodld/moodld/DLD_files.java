@@ -9,6 +9,7 @@ import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
+import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
@@ -46,7 +47,8 @@ public class DLD_files extends AppCompatActivity {
     ArrayList<String> fileNames = new ArrayList<String>();
     SharedPreferences coursePrefs;
     private ProgressBar progressBar;
-    int downloadsRemaining = -1;
+    int downloadsRemaining = 0;
+    TextView log;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -55,6 +57,8 @@ public class DLD_files extends AppCompatActivity {
 
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
+
+        log = (TextView)findViewById(R.id.log);
 
         SharedPreferences preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
         sessionCookie = preferences.getString("MoodleSession", null);
@@ -73,6 +77,8 @@ public class DLD_files extends AppCompatActivity {
             }.getType();
             CourseList = (ArrayList<Course>) gson.fromJson(json, listType);
             Log.d(TAG, "Courses fetched from saved data: " + CourseList.toString());
+            log.append("Fetching courses from preferences.\n\n");
+            scrollToBottom();
             downloadFromCourses();
         } else {
             Log.d(TAG, "No CourseList saved. Redirecting to Preferences.");
@@ -125,6 +131,8 @@ public class DLD_files extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
+            log.append("Downloading " + course.getName() + " files.\n\n");
+            scrollToBottom();
             //Iterate over links and call DownloadFileFromUrl
             for (Element link : links) {
 //                if (!link.attr("abs:href").startsWith(mainPageUrl + "logout.php") && !link.attr("abs:href").startsWith(mainPageUrl + "mod/forum") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "badges") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "calendar")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "grade")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "message")) {
@@ -132,9 +140,8 @@ public class DLD_files extends AppCompatActivity {
                     linksToDownload.add(link);
                 }
             }
-            downloadsRemaining = linksToDownload.size();
+            downloadsRemaining += linksToDownload.size();
             for (Element link : linksToDownload) {
-                downloadsRemaining = linksToDownload.size();
                 DownloadFileFromURL download = new DownloadFileFromURL();
                 download.execute(link.attr("abs:href"), course.getName().substring(0, 6) + "/" + link.text());
 //                    downloadLinks.add(course.getUrl());
@@ -171,20 +178,6 @@ public class DLD_files extends AppCompatActivity {
                         .addHeader("Cookie", "MoodleSession=" + sessionCookie)
                         .build();
                 final Response response = client.newCall(request).execute();
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        TextView filenametv = (TextView)findViewById(R.id.textView);
-                        filenametv.setText(params[1].substring(endIndex + 1));
-                        try {
-                            progressBar.setMax(Integer.parseInt(response.header("Content-Length")));
-                            Log.d(TAG, "Content length = " + response.header("Content-Length"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                });
-
                 InputStream is = response.body().byteStream();
 
                 BufferedInputStream input = new BufferedInputStream(is);
@@ -196,8 +189,25 @@ public class DLD_files extends AppCompatActivity {
                 if (!directory.exists()) {
                     directory.mkdirs();
                 }
-                File file = new File(directory, params[1].substring(endIndex + 1) + ".pdf");
+                final File file = new File(directory, params[1].substring(endIndex + 1) + ".pdf");
                 Log.d(TAG, "Storage path = " + file.getPath());
+
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        TextView filenametv = (TextView)findViewById(R.id.textView);
+                        filenametv.setText(params[1].substring(endIndex + 1));
+                        log.append("Downloading " + params[1].substring(endIndex + 1) + " to " + file.getPath() + "\n\n");
+                        scrollToBottom();
+                        try {
+                            progressBar.setMax(Integer.parseInt(response.header("Content-Length")));
+                            Log.d(TAG, "Content length = " + response.header("Content-Length"));
+                        } catch (Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                });
+
                 OutputStream output = new FileOutputStream(file);
 
                 byte[] data = new byte[1024];
@@ -234,12 +244,24 @@ public class DLD_files extends AppCompatActivity {
                 Log.d(TAG, "All downloads complete.");
                 TextView filenametv = (TextView)findViewById(R.id.textView);
                 filenametv.setText("All downloads complete!");
+                log.append("All downloads complete.\n");
+                scrollToBottom();
             }
             Log.d(TAG, "Downloads remaining = " + downloadsRemaining);
             progressBar.setProgress(0);
             progressBar.setVisibility(View.INVISIBLE);
         }
 
+    }
+
+    void scrollToBottom() {
+        final ScrollView scrollView = (ScrollView)findViewById(R.id.scrollView);
+        scrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                scrollView.fullScroll(View.FOCUS_DOWN);
+            }
+        });
     }
 
 }
