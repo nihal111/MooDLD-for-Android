@@ -41,6 +41,8 @@ public class DLD_files extends AppCompatActivity {
     private final String rootDir = "MooDLD";
     private String sessionCookie;
     ArrayList<Course> CourseList = new ArrayList<Course>();
+    ArrayList<String> downloadLinks = new ArrayList<String>();
+    ArrayList<String> fileNames = new ArrayList<String>();
     SharedPreferences coursePrefs;
     private ProgressBar progressBar;
 
@@ -118,9 +120,12 @@ public class DLD_files extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             //Iterate over links and call DownloadFileFromUrl
             for (Element link : links) {
-                if (!link.attr("abs:href").startsWith(mainPageUrl + "logout.php") || !link.attr("abs:href").startsWith(mainPageUrl + "mod/forum") || !link.attr("abs:href").startsWith(mainPageUrl + "my") || !link.attr("abs:href").startsWith(mainPageUrl + "user") || !link.attr("abs:href").startsWith(mainPageUrl + "badges") || !link.attr("abs:href").startsWith(mainPageUrl + "my") || !link.attr("abs:href").startsWith(mainPageUrl + "user") || !link.attr("abs:href").startsWith(mainPageUrl + "calendar")|| !link.attr("abs:href").startsWith(mainPageUrl + "my") || !link.attr("abs:href").startsWith(mainPageUrl + "user") || !link.attr("abs:href").startsWith(mainPageUrl + "grade")|| !link.attr("abs:href").startsWith(mainPageUrl + "my") || !link.attr("abs:href").startsWith(mainPageUrl + "user") || !link.attr("abs:href").startsWith(mainPageUrl + "message")) {
+//                if (!link.attr("abs:href").startsWith(mainPageUrl + "logout.php") && !link.attr("abs:href").startsWith(mainPageUrl + "mod/forum") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "badges") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "calendar")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "grade")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "message")) {
+                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/resource")) {
                     DownloadFileFromURL download = new DownloadFileFromURL();
-                    download.execute(course.getUrl(), course.getName().substring(0,6));
+                    download.execute(course.getUrl(), course.getPath() + "/" + link.text());
+//                    downloadLinks.add(course.getUrl());
+//                    fileNames.add(course.getPath() + link.text());
                     Log.d(TAG, link.text() + ": " + link.attr("abs:href"));
                 }
             }
