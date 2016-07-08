@@ -17,8 +17,17 @@
         android:minHeight="40dp"
         android:maxHeight="40dp"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="120dp"
+        android:layout_below="@+id/textView"
+        android:layout_marginTop="10dp"
         android:background="#eee"
         android:max="100" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:textAppearance="?android:attr/textAppearanceMedium"
+        android:text="File name"
+        android:id="@+id/textView"
+        android:layout_marginTop="100dp" />
 
 </RelativeLayout>
