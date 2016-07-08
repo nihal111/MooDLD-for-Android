@@ -67,7 +67,7 @@ public class Preferences extends AppCompatActivity {
 
         rootDir = coursePrefs.getString("rootDir", null);
         if (rootDir == null) {
-            rootDir = Environment.getExternalStorageDirectory().toString() + "/MooDLD";
+            rootDir = Environment.getExternalStorageDirectory().getAbsolutePath() + "/MooDLD";
             root_dir_value.setText(rootDir);
             Log.d(TAG,"No saved rootDir. rootDir is now" + rootDir);
         } else {

@@ -83,10 +83,12 @@ public class DLD_files extends AppCompatActivity {
     private void downloadFromCourses() {
         for (int i=0; i< CourseList.size(); i++) {
             Course course = CourseList.get(i);
-            Log.d(TAG, course.getName() + ": " + course.getUrl());
-            JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
-            jsoupAsyncTask.execute(course, sessionCookie);
-            Log.d(TAG, course.getName());
+            if (course.isChecked()) {
+                Log.d(TAG, course.getName() + ": " + course.getUrl());
+                JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
+                jsoupAsyncTask.execute(course, sessionCookie);
+                Log.d(TAG, course.getName());
+            }
         }
     }
 
@@ -175,7 +177,10 @@ public class DLD_files extends AppCompatActivity {
 
                 BufferedInputStream input = new BufferedInputStream(is);
                 File SDCardRoot = Environment.getExternalStorageDirectory();
-                File file = new File(params[1]);
+                params[1] = params[1].replace(" ","");
+                int endIndex = params[1].lastIndexOf("/");
+                Log.wtf(TAG, params[1].substring(0, endIndex) + params[1].substring(endIndex + 1));
+                File file = new File(SDCardRoot, params[1].substring(endIndex + 1));
                 OutputStream output = new FileOutputStream(file);
 
                 byte[] data = new byte[1024];
