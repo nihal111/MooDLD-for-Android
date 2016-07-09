@@ -1,9 +1,11 @@
 package com.moodld.moodld;
 
+import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Environment;
+import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.util.Log;
@@ -38,7 +40,7 @@ import okhttp3.Response;
 public class DLD_files extends AppCompatActivity {
 
     private static final String TAG = "DLD_files";
-    private final int REQUEST_DIRECTORY = 0;
+    private final int REQUEST_DIRECTORY = 0, NOTIFICATION_ID=1;
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
     String rootDir;
     private String sessionCookie;
@@ -49,6 +51,8 @@ public class DLD_files extends AppCompatActivity {
     private ProgressBar progressBar;
     int downloadsRemaining = 0;
     TextView log;
+    NotificationManager notifManager;
+    NotificationCompat.Builder notifBuilder;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -87,6 +91,9 @@ public class DLD_files extends AppCompatActivity {
             finish();
         }
         rootDir = coursePrefs.getString("rootDir", Environment.getExternalStorageDirectory().getPath());
+
+        notifManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        notifBuilder = new NotificationCompat.Builder(this);
     }
 
     private void downloadFromCourses() {
@@ -154,6 +161,8 @@ public class DLD_files extends AppCompatActivity {
 
     class DownloadFileFromURL extends AsyncTask<String, Integer, String> {
 
+        int contentLength;
+
         /**
          * Before starting background thread Show Progress Bar Dialog
          */
@@ -171,7 +180,7 @@ public class DLD_files extends AppCompatActivity {
             try {
                 final int endIndex = params[1].lastIndexOf("/");
 
-                OkHttpClient.Builder builder = new OkHttpClient.Builder();
+                final OkHttpClient.Builder builder = new OkHttpClient.Builder();
 //                builder.addNetworkInterceptor(new LoggingInterceptor());
                 OkHttpClient client = builder.build();
                 Request request = new Request.Builder().url(params[0])
@@ -183,28 +192,35 @@ public class DLD_files extends AppCompatActivity {
                 BufferedInputStream input = new BufferedInputStream(is);
 //                File ExternalStorageRoot = Environment.getExternalStorageDirectory();
 //                params[1] = params[1].replace(" ","");
-                Log.d(TAG, "Directory = " + params[1].substring(0, endIndex));
-                Log.d(TAG, "File name = " + params[1].substring(endIndex + 1));
-                File directory = new File(rootDir, "MooDLD/" + params[1].substring(0, endIndex));
+                String dir = params[1].substring(0, endIndex);
+                final String filename = params[1].substring(endIndex + 1);
+                Log.d(TAG, "Directory = " + dir);
+                Log.d(TAG, "File name = " + filename);
+                File directory = new File(rootDir, "MooDLD/" + dir);
                 if (!directory.exists()) {
                     directory.mkdirs();
                 }
-                final File file = new File(directory, params[1].substring(endIndex + 1) + ".pdf");
+                final File file = new File(directory, filename + ".pdf");
                 Log.d(TAG, "Storage path = " + file.getPath());
 
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
                         TextView filenametv = (TextView)findViewById(R.id.textView);
-                        filenametv.setText(params[1].substring(endIndex + 1));
-                        log.append("Downloading " + params[1].substring(endIndex + 1) + " to " + file.getPath() + "\n\n");
+                        filenametv.setText(filename);
+                        log.append("Downloading " + filename + " to " + file.getPath() + "\n\n");
                         scrollToBottom();
                         try {
-                            progressBar.setMax(Integer.parseInt(response.header("Content-Length")));
+                            contentLength = Integer.parseInt(response.header("Content-Length"));
+                            progressBar.setMax(contentLength);
                             Log.d(TAG, "Content length = " + response.header("Content-Length"));
                         } catch (Exception e) {
                             e.printStackTrace();
                         }
+                        notifBuilder.setContentTitle("MooDLD Download")
+                                .setContentText(filename)
+                                .setSmallIcon(R.drawable.logo)
+                                .setOngoing(true);
                     }
                 });
 
@@ -234,18 +250,29 @@ public class DLD_files extends AppCompatActivity {
         protected void onProgressUpdate(Integer... values) {
             progressBar.setVisibility(View.VISIBLE);
             progressBar.setProgress(values[0]);
+            notifBuilder.setProgress(contentLength, values[0], false);
+            notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
         }
 
         @Override
         protected void onPostExecute(String file_url) {
             Log.d(TAG, "Download completed");
             downloadsRemaining -= 1;
+
+            notifBuilder.setContentText("Download complete")
+                    .setProgress(0, 0, false);
+            notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
+
             if (downloadsRemaining == 0) {
                 Log.d(TAG, "All downloads complete.");
                 TextView filenametv = (TextView)findViewById(R.id.textView);
                 filenametv.setText("All downloads complete!");
                 log.append("All downloads complete.\n");
                 scrollToBottom();
+
+                notifBuilder.setContentText("All downloads complete")
+                        .setProgress(0, 0, false);
+                notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
             }
             Log.d(TAG, "Downloads remaining = " + downloadsRemaining);
             progressBar.setProgress(0);
