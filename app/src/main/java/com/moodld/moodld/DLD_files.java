@@ -4,6 +4,7 @@ import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.CountDownTimer;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
@@ -64,6 +65,9 @@ public class DLD_files extends AppCompatActivity {
 
         log = (TextView)findViewById(R.id.log);
 
+        /**
+         * Getting MoodleSession cookie from SharedPreferences
+         */
         SharedPreferences preferences = getSharedPreferences("LoginDetails", MODE_PRIVATE);
         sessionCookie = preferences.getString("MoodleSession", null);
         if (sessionCookie == null) {
@@ -73,6 +77,9 @@ public class DLD_files extends AppCompatActivity {
             finish();
         }
 
+        /**
+         * Getting CourseList from SharedPreferences
+         */
         coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
         String json = coursePrefs.getString("CourseList", null);
         if (json != null) {
@@ -90,12 +97,19 @@ public class DLD_files extends AppCompatActivity {
             startActivity(intent);
             finish();
         }
+        // Getting root directory from shared preferences
         rootDir = coursePrefs.getString("rootDir", Environment.getExternalStorageDirectory().getPath());
 
+        /**
+         * Initialising Notifications setup for progress update
+         */
         notifManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         notifBuilder = new NotificationCompat.Builder(this);
     }
 
+    /**
+     *
+     */
     private void downloadFromCourses() {
         for (int i = 0; i < CourseList.size(); i++) {
             Course course = CourseList.get(i);
@@ -162,6 +176,7 @@ public class DLD_files extends AppCompatActivity {
     class DownloadFileFromURL extends AsyncTask<String, Integer, String> {
 
         int contentLength;
+        CountDownTimer cdt;
 
         /**
          * Before starting background thread Show Progress Bar Dialog
@@ -169,6 +184,22 @@ public class DLD_files extends AppCompatActivity {
         @Override
         protected void onPreExecute() {
             progressBar.setVisibility(View.VISIBLE);
+
+            /**
+             * Initialising custom countdown timer
+             * Ticks once every 500ms
+             */
+            cdt = new CountDownTimer(100*60*1000, 1000) {
+                @Override
+                public void onTick(long millisUntilFinished) {
+                    notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
+                }
+
+                @Override
+                public void onFinish() {
+                    notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
+                }
+            };
         }
 
         /**
@@ -221,6 +252,8 @@ public class DLD_files extends AppCompatActivity {
                                 .setContentText(filename)
                                 .setSmallIcon(R.drawable.logo)
                                 .setOngoing(true);
+                        notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
+                        cdt.start();
                     }
                 });
 
@@ -251,7 +284,6 @@ public class DLD_files extends AppCompatActivity {
             progressBar.setVisibility(View.VISIBLE);
             progressBar.setProgress(values[0]);
             notifBuilder.setProgress(contentLength, values[0], false);
-            notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
         }
 
         @Override
@@ -261,7 +293,8 @@ public class DLD_files extends AppCompatActivity {
 
             notifBuilder.setContentText("Download complete")
                     .setProgress(0, 0, false);
-            notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
+            cdt.onFinish();
+            cdt.cancel();
 
             if (downloadsRemaining == 0) {
                 Log.d(TAG, "All downloads complete.");
