@@ -29,7 +29,9 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -208,7 +210,6 @@ public class DLD_files extends AppCompatActivity {
             for (Element link : links) {
 
                 String url = link.attr("abs:href");
-
                 if (link.attr("abs:href").indexOf("&parent=") > -1) {
                     url = link.attr("abs:href").substring(0, link.attr("abs:href").indexOf("&parent="));
                 }
@@ -248,11 +249,20 @@ public class DLD_files extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
-            for (int i=0 ; i<links.size() ; i+=2) {
-                if (links.get(i).attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
-                    Log.d("Nf thread downloadable", links.get(i).attr("abs:href"));
+            Boolean found = false;
+            for (Element link : links) {
+                if (found) { found = false; continue; }
+                if (link.attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
+                    Log.d("Nf thread downloadable",link.attr("abs:href"));
+                    found = true;
                     DownloadFileFromURL download = new DownloadFileFromURL();
-                    download.execute(links.get(i).attr("abs:href"), courseName.substring(0, 6) + "/NewsForum/" + links.get(i).text());
+                    try {
+                        download.execute(link.attr("abs:href"), courseName.substring(0, 6) + "/NewsForum/" +
+                                java.net.URLDecoder.decode(link.attr("abs:href"), "UTF-8").substring(
+                                        java.net.URLDecoder.decode(link.attr("abs:href"), "UTF-8").lastIndexOf("/") + 1));
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
                 }
             }
         }
