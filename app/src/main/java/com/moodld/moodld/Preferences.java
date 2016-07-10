@@ -1,5 +1,6 @@
 package com.moodld.moodld;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
@@ -53,6 +54,7 @@ public class Preferences extends AppCompatActivity {
     SharedPreferences coursePrefs;
     String rootDir, sessionCookie;
     Integer pending = 0;
+    ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -65,6 +67,12 @@ public class Preferences extends AppCompatActivity {
         coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
         // Find the ListView resource.
         listView = (ListView) findViewById(R.id.listView);
+
+        dialog = new ProgressDialog(this);
+        dialog.setTitle("Please wait");
+        dialog.setMessage("Loading courses...");
+        dialog.setCancelable(false);
+        dialog.show();
 
         rootDir = coursePrefs.getString("rootDir", null);
         if (rootDir == null) {
@@ -266,6 +274,7 @@ public class Preferences extends AppCompatActivity {
                 runOnUiThread(new Runnable() {
                     @Override
                     public void run() {
+                        dialog.dismiss();
                         listAdapter = new CourseArrayAdapter(Preferences.this, CourseList);
                         listView.setAdapter(listAdapter);
                     }

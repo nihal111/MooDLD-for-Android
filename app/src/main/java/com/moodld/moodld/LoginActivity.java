@@ -1,5 +1,6 @@
 package com.moodld.moodld;
 
+import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -42,11 +43,18 @@ public class LoginActivity extends AppCompatActivity {
     private final String TAG = "LoginActivity";
     private final String PREFS_NAME = "LoginDetails";
     private boolean details_correct = false;
+    ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
+
+        dialog = new ProgressDialog(this);
+        dialog.setTitle("Please wait");
+        dialog.setMessage("Logging you in...");
+        dialog.setCancelable(false);
+        dialog.show();
 
         Button login = (Button) findViewById(R.id.login);
 
@@ -143,6 +151,7 @@ public class LoginActivity extends AppCompatActivity {
             super.onPostExecute(aVoid);
             if (details_correct) {
                 SaveLoginDetails(username, password, sessionCookie);
+                dialog.dismiss();
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();

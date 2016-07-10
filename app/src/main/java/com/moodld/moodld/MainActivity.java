@@ -1,6 +1,7 @@
 package com.moodld.moodld;
 
 import android.app.DownloadManager;
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
@@ -58,11 +59,18 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
     private final int WRITE_EXTERNAL_STORAGE = 1;
+    ProgressDialog dialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        dialog = new ProgressDialog(this);
+        dialog.setTitle("Please wait");
+        dialog.setMessage("Loading data...");
+        dialog.setCancelable(false);
+        dialog.show();
 
         SharedPreferences prefs = getSharedPreferences("LoginDetails", MODE_PRIVATE);
         sessionCookie = prefs.getString("MoodleSession", null);
@@ -230,20 +238,16 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
+            dialog.dismiss();
             for (Element link : links) {
                 if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
                     downloadLinks.add(link.attr("abs:href"));
                     courseNames.add(link.text().substring(0, 6));
                 } else if (link.attr("abs:href").startsWith(mainPageUrl + "user/profile.php")) {
-                    final String myname = link.text();
+                    String myname = link.text();
                     Log.d(TAG, myname);
-                    runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            TextView nameTV = (TextView) findViewById(R.id.nameTextView);
-                            nameTV.setText("Welcome, " + myname);
-                        }
-                    });
+                    TextView nameTV = (TextView) findViewById(R.id.nameTextView);
+                    nameTV.setText("Welcome, " + myname);
                 }
             }
             Log.d(TAG, downloadLinks.toString());
