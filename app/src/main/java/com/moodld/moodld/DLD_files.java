@@ -31,8 +31,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
-import java.net.URLDecoder;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
 
 import okhttp3.OkHttpClient;
@@ -55,6 +55,7 @@ public class DLD_files extends AppCompatActivity {
     TextView log;
     NotificationManager notifManager;
     NotificationCompat.Builder notifBuilder;
+    boolean nfDownloaded = false;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -182,11 +183,9 @@ public class DLD_files extends AppCompatActivity {
         Course course;
         Elements links;
         Document htmlDocument;
-        ArrayList<Element> linksToDownload;
 
         @Override
         protected void onPreExecute() {
-            linksToDownload = new ArrayList<>();
             super.onPreExecute();
         }
 
@@ -220,6 +219,7 @@ public class DLD_files extends AppCompatActivity {
                     jsoupAsyncTaskFetchNfThread.execute(link.attr("abs:href"), course.getName(), sessionCookie);
                 }
             }
+            nfDownloaded = true;
         }
     }
 
@@ -249,20 +249,32 @@ public class DLD_files extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
-            Boolean found = false;
+            /**
+             * Removing duplicates from links obtained on news forum page.
+              */
+            boolean found = false;
+            ArrayList<Element> linksToDownload = new ArrayList<>();
             for (Element link : links) {
-                if (found) { found = false; continue; }
+                if (found) {
+                    found = false;
+                    continue;
+                }
                 if (link.attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
-                    Log.d("Nf thread downloadable",link.attr("abs:href"));
+                    linksToDownload.add(link);
                     found = true;
-                    DownloadFileFromURL download = new DownloadFileFromURL();
-                    try {
-                        download.execute(link.attr("abs:href"), courseName.substring(0, 6) + "/NewsForum/" +
-                                java.net.URLDecoder.decode(link.attr("abs:href"), "UTF-8").substring(
-                                        java.net.URLDecoder.decode(link.attr("abs:href"), "UTF-8").lastIndexOf("/") + 1));
-                    } catch (UnsupportedEncodingException e) {
-                        e.printStackTrace();
-                    }
+                }
+            }
+
+            downloadsRemaining += linksToDownload.size();
+            for (Element link : linksToDownload) {
+                Log.d("Nf thread downloadable", link.attr("abs:href"));
+                DownloadFileFromURL download = new DownloadFileFromURL();
+                try {
+                    download.execute(link.attr("abs:href"), courseName.substring(0, 6) + "/NewsForum/" +
+                            java.net.URLDecoder.decode(link.attr("abs:href"), "UTF-8").substring(
+                                    java.net.URLDecoder.decode(link.attr("abs:href"), "UTF-8").lastIndexOf("/") + 1));
+                } catch (UnsupportedEncodingException e) {
+                    e.printStackTrace();
                 }
             }
         }
@@ -373,6 +385,7 @@ public class DLD_files extends AppCompatActivity {
                         @Override
                         public void run() {
                             log.append(filename + " is already downloaded. Skipping download.\n\n");
+                            scrollToBottom();
                         }
                     });
                 }
@@ -400,7 +413,7 @@ public class DLD_files extends AppCompatActivity {
             cdt.onFinish();
             cdt.cancel();
 
-            if (downloadsRemaining == 0) {
+            if (nfDownloaded && downloadsRemaining == 0) {
                 Log.d(TAG, "All downloads complete.");
                 TextView filenametv = (TextView) findViewById(R.id.textView);
                 filenametv.setText("All downloads complete!");
