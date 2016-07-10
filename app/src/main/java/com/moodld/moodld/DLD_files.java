@@ -117,6 +117,8 @@ public class DLD_files extends AppCompatActivity {
                 Log.d(TAG, course.getName() + ": " + course.getUrl());
                 JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
                 jsoupAsyncTask.execute(course, sessionCookie);
+                JsoupAsyncTaskFetchNf jsoupAsyncTaskFetchNf = new JsoupAsyncTaskFetchNf();
+                jsoupAsyncTaskFetchNf.execute(course, sessionCookie);
                 Log.d(TAG, course.getName());
             }
         }
@@ -170,6 +172,79 @@ public class DLD_files extends AppCompatActivity {
         }
     }
 
+
+    private class JsoupAsyncTaskFetchNf extends AsyncTask<Object, String, Void> {
+
+        Course course;
+        Elements links;
+        Document htmlDocument;
+        ArrayList<Element> linksToDownload;
+
+        @Override
+        protected void onPreExecute() {
+            linksToDownload = new ArrayList<>();
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(Object... params) {
+            try {
+                course = (Course) params[0];
+                htmlDocument = Jsoup.connect(course.getNewsforumurl()).cookie("MoodleSession", (String) params[1]).get();
+                links = htmlDocument.select("a[href]");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            log.append("Downloading " + course.getName() + " files.\n\n");
+            scrollToBottom();
+            //Iterate over links and call DownloadFileFromUrl
+            for (Element link : links) {
+//                if (!link.attr("abs:href").startsWith(mainPageUrl + "logout.php") && !link.attr("abs:href").startsWith(mainPageUrl + "mod/forum") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "badges") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "calendar")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "grade")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "message")) {
+                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/discuss.php")) {
+                    Log.d("Nf Links: ", link.attr("abs:href"));
+                    JsoupAsyncTaskFetchNfThread jsoupAsyncTaskFetchNfThread = new JsoupAsyncTaskFetchNfThread();
+                    jsoupAsyncTaskFetchNfThread.execute(link.attr("abs:href"), sessionCookie);
+                }
+            }
+        }
+    }
+
+
+    private class JsoupAsyncTaskFetchNfThread extends AsyncTask<String, String, Void> {
+
+        Elements links;
+        Document htmlDocument;
+
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            try {
+                htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[1]).get();
+                links = htmlDocument.select("a[href]");
+            } catch (IOException e) {
+                e.printStackTrace();
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(Void result) {
+            for (Element link : links) {
+                if (link.attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
+                    Log.d("Nf thread downloadable",link.attr("abs:href"));
+                }
+            }
+        }
+    }
 
     class DownloadFileFromURL extends AsyncTask<String, Integer, String> {
 
