@@ -232,7 +232,23 @@ public class Preferences extends AppCompatActivity {
                     }
                 }
 
+                if (pending == 0) {
+                    onLoadComplete();
+                }
+
             }
+    }
+
+    private void onLoadComplete() {
+        Log.d(TAG, "CourseList after merging fetched and saved data: " + CourseList.toString());
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dialog.dismiss();
+                listAdapter = new CourseArrayAdapter(Preferences.this, CourseList);
+                listView.setAdapter(listAdapter);
+            }
+        });
     }
 
     private class JsoupAsyncTaskFetchNewsForumUrl extends AsyncTask<Object, String, Void> {
@@ -270,15 +286,7 @@ public class Preferences extends AppCompatActivity {
                 }
             pending --;
             if (pending == 0) {
-                Log.d(TAG, "CourseList after merging fetched and saved data: " + CourseList.toString());
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        dialog.dismiss();
-                        listAdapter = new CourseArrayAdapter(Preferences.this, CourseList);
-                        listView.setAdapter(listAdapter);
-                    }
-                });
+                onLoadComplete();
             }
             }
         }

@@ -50,11 +50,7 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
-        dialog = new ProgressDialog(this);
-        dialog.setTitle("Please wait");
-        dialog.setMessage("Logging you in...");
-        dialog.setCancelable(false);
-        dialog.show();
+
 
         Button login = (Button) findViewById(R.id.login);
 
@@ -86,6 +82,15 @@ public class LoginActivity extends AppCompatActivity {
 
         public final MediaType MEDIA_TYPE = MediaType.parse("application/x-www-form-urlencoded");
         private String sessionCookie, username, password;
+
+        @Override
+        public void onPreExecute () {
+            dialog = new ProgressDialog(LoginActivity.this);
+            dialog.setTitle("Please wait");
+            dialog.setMessage("Logging you in...");
+            dialog.setCancelable(false);
+            dialog.show();
+        }
 
         @Override
         protected Void doInBackground(String... params) {
