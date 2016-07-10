@@ -141,9 +141,7 @@ public class DLD_files extends AppCompatActivity {
             try {
                 course = (Course) params[0];
                 htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", (String) params[1]).get();
-//                htmlDocument = Jsoup.parse("<div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity assign modtype_assign \" id=\"module-21233\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/assign/view.php?id=21233\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/assign/1444075825/icon\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Assignment 6 Submission Link: Due April 4, 2355 hours.</span></a></div></div></div></div></li><li class=\"activity resource modtype_resource \" id=\"module-22063\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=22063\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Assignment 4 Solutions<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-15\" class=\"section main clearfix\" role=\"region\" aria-label=\"11 April - 17 April\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">11 April - 17 April</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-16\" class=\"section main clearfix\" role=\"region\" aria-label=\"18 April - 24 April\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">18 April - 24 April</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-22586\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=22586\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Endsem solutions.<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li><li class=\"activity assign modtype_assign \" id=\"module-22589\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/assign/view.php?id=22589\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/assign/1444075825/icon\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Endsem <span class=\"accesshide \" > Assignment</span></span></a></div></div></div></div></li></ul></div></li><li id=\"section-17\" class=\"section main clearfix\" role=\"region\" aria-label=\"25 April - 1 May\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">25 April - 1 May</h3><div class=\"summary\"></div><ul class=\"section img-text\"></ul></div></li><li id=\"section-18\" class=\"section main clearfix\" role=\"region\" aria-label=\"2 May - 8 May\"><div class=\"left side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"right side\"><img width=\"1\" height=\"1\" class=\"spacer\" alt=\"\" title=\"\" src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/spacer\" /></div><div class=\"content\"><h3 class=\"sectionname\">2 May - 8 May</h3><div class=\"summary\"></div><ul class=\"section img-text\"><li class=\"activity resource modtype_resource \" id=\"module-22857\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=22857\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Assignment 5 Solutions.<span class=\"accesshide \" > File</span></span></a></div></div></div></div></li><li class=\"activity resource modtype_resource \" id=\"module-22858\"><div><div class=\"mod-indent-outer\"><div class=\"mod-indent\"></div><div><div class=\"activityinstance\"><a class=\"\" onclick=\"\" href=\"http://moodle.iitb.ac.in/mod/resource/view.php?id=22858\"><img src=\"http://moodle.iitb.ac.in/theme/image.php/clean/core/1444075825/f/pdf-24\" class=\"iconlarge activityicon\" alt=\" \" role=\"presentation\" /><span class=\"instancename\">Assignment 6: Divider implementation.<span class=\"accesshide \" > File</span>");
                 links = htmlDocument.select("a[href]");
-//                Log.d(TAG, links.toString());
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -234,44 +232,48 @@ public class DLD_files extends AppCompatActivity {
                 final File file = new File(directory, filename + ".pdf");
                 Log.d(TAG, "Storage path = " + file.getPath());
 
-                runOnUiThread(new Runnable() {
-                    @Override
-                    public void run() {
-                        TextView filenametv = (TextView)findViewById(R.id.textView);
-                        filenametv.setText(filename);
-                        log.append("Downloading " + filename + " to " + file.getPath() + "\n\n");
-                        scrollToBottom();
-                        try {
-                            contentLength = Integer.parseInt(response.header("Content-Length"));
-                            progressBar.setMax(contentLength);
-                            Log.d(TAG, "Content length = " + response.header("Content-Length"));
-                        } catch (Exception e) {
-                            e.printStackTrace();
+                if (!file.exists()) {
+
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            TextView filenametv = (TextView) findViewById(R.id.textView);
+                            filenametv.setText(filename);
+                            log.append("Downloading " + filename + " to " + file.getPath() + "\n\n");
+                            scrollToBottom();
+                            try {
+                                contentLength = Integer.parseInt(response.header("Content-Length"));
+                                progressBar.setMax(contentLength);
+                                Log.d(TAG, "Content length = " + response.header("Content-Length"));
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                            notifBuilder.setContentTitle("MooDLD Download")
+                                    .setContentText(filename)
+                                    .setSmallIcon(R.drawable.logo)
+                                    .setOngoing(true);
+                            notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
+                            cdt.start();
                         }
-                        notifBuilder.setContentTitle("MooDLD Download")
-                                .setContentText(filename)
-                                .setSmallIcon(R.drawable.logo)
-                                .setOngoing(true);
-                        notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
-                        cdt.start();
+                    });
+
+                    OutputStream output = new FileOutputStream(file);
+
+                    byte[] data = new byte[1024];
+
+                    long total = 0;
+
+                    while ((count = input.read(data)) != -1) {
+                        total += count;
+                        publishProgress((int) total);
+                        output.write(data, 0, count);
                     }
-                });
 
-                OutputStream output = new FileOutputStream(file);
+                    output.flush();
+                    output.close();
+                    input.close();
 
-                byte[] data = new byte[1024];
-
-                long total = 0;
-
-                while ((count = input.read(data)) != -1) {
-                    total += count;
-                    publishProgress((int) total);
-                    output.write(data, 0, count);
                 }
-
-                output.flush();
-                output.close();
-                input.close();
             } catch (Exception e) {
                 Log.e("Error: ", e.getMessage());
             }
