@@ -216,7 +216,7 @@ public class DLD_files extends AppCompatActivity {
                     Log.d("Nf Links: ", url);
                     nfthreads.add(url);
                     JsoupAsyncTaskFetchNfThread jsoupAsyncTaskFetchNfThread = new JsoupAsyncTaskFetchNfThread();
-                    jsoupAsyncTaskFetchNfThread.execute(link.attr("abs:href"), sessionCookie);
+                    jsoupAsyncTaskFetchNfThread.execute(link.attr("abs:href"), course.getName(), sessionCookie);
                 }
             }
         }
@@ -227,6 +227,7 @@ public class DLD_files extends AppCompatActivity {
 
         Elements links;
         Document htmlDocument;
+        String courseName;
 
         @Override
         protected void onPreExecute() {
@@ -236,8 +237,9 @@ public class DLD_files extends AppCompatActivity {
         @Override
         protected Void doInBackground(String... params) {
             try {
-                htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[1]).get();
+                htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[2]).get();
                 links = htmlDocument.select("a[href]");
+                courseName = params[1];
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -246,9 +248,11 @@ public class DLD_files extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
-            for (Element link : links) {
-                if (link.attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
-                    Log.d("Nf thread downloadable", link.attr("abs:href"));
+            for (int i=0 ; i<links.size() ; i+=2) {
+                if (links.get(i).attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
+                    Log.d("Nf thread downloadable", links.get(i).attr("abs:href"));
+                    DownloadFileFromURL download = new DownloadFileFromURL();
+                    download.execute(links.get(i).attr("abs:href"), courseName.substring(0, 6) + "/NewsForum/" + links.get(i).text());
                 }
             }
         }
@@ -352,8 +356,15 @@ public class DLD_files extends AppCompatActivity {
                     output.flush();
                     output.close();
                     input.close();
-                    is.close();
+                    response.body().close();
 
+                } else {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            log.append(filename + " is already downloaded. Skipping download.\n\n");
+                        }
+                    });
                 }
             } catch (Exception e) {
                 Log.e("Error: ", e.getMessage());
