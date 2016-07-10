@@ -105,6 +105,9 @@ public class DLD_files extends AppCompatActivity {
          */
         notifManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
         notifBuilder = new NotificationCompat.Builder(this);
+        notifBuilder.setContentTitle("MooDLD Download")
+                .setSmallIcon(R.drawable.logo)
+                .setOngoing(true);
     }
 
     /**
@@ -200,7 +203,7 @@ public class DLD_files extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
-            log.append("Downloading " + course.getName() + " files.\n\n");
+            log.append("Downloading " + course.getName() + " News Forum files.\n\n");
             scrollToBottom();
             //Iterate over links and call DownloadFileFromUrl
             for (Element link : links) {
@@ -323,10 +326,7 @@ public class DLD_files extends AppCompatActivity {
                             } catch (Exception e) {
                                 e.printStackTrace();
                             }
-                            notifBuilder.setContentTitle("MooDLD Download")
-                                    .setContentText(filename)
-                                    .setSmallIcon(R.drawable.logo)
-                                    .setOngoing(true);
+                            notifBuilder.setContentText(filename);
                             notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
                             cdt.start();
                         }
@@ -347,6 +347,7 @@ public class DLD_files extends AppCompatActivity {
                     output.flush();
                     output.close();
                     input.close();
+                    is.close();
 
                 }
             } catch (Exception e) {
@@ -381,7 +382,8 @@ public class DLD_files extends AppCompatActivity {
                 scrollToBottom();
 
                 notifBuilder.setContentText("All downloads complete")
-                        .setProgress(0, 0, false);
+                        .setProgress(0, 0, false)
+                        .setOngoing(false);
                 notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
             }
             Log.d(TAG, "Downloads remaining = " + downloadsRemaining);
@@ -401,4 +403,9 @@ public class DLD_files extends AppCompatActivity {
         });
     }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        notifManager.cancelAll();
+    }
 }

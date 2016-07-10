@@ -115,8 +115,6 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, "Logged out.");
                 Intent intent = new Intent(MainActivity.this, Preferences.class);
                 startActivity(intent);
-                finish();
-
             }
         });
 
