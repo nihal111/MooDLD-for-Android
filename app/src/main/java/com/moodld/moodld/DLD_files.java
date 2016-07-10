@@ -4,11 +4,11 @@ import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.CountDownTimer;
 import android.os.Environment;
 import android.support.v4.app.NotificationCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
@@ -30,7 +30,6 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.Type;
-import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +40,7 @@ import okhttp3.Response;
 public class DLD_files extends AppCompatActivity {
 
     private static final String TAG = "DLD_files";
-    private final int REQUEST_DIRECTORY = 0, NOTIFICATION_ID=1;
+    private final int REQUEST_DIRECTORY = 0, NOTIFICATION_ID = 1;
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
     String rootDir;
     private String sessionCookie;
@@ -63,7 +62,7 @@ public class DLD_files extends AppCompatActivity {
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         progressBar.setVisibility(View.INVISIBLE);
 
-        log = (TextView)findViewById(R.id.log);
+        log = (TextView) findViewById(R.id.log);
 
         /**
          * Getting MoodleSession cookie from SharedPreferences
@@ -103,7 +102,7 @@ public class DLD_files extends AppCompatActivity {
         /**
          * Initialising Notifications setup for progress update
          */
-        notifManager = (NotificationManager)getSystemService(NOTIFICATION_SERVICE);
+        notifManager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         notifBuilder = new NotificationCompat.Builder(this);
         notifBuilder.setContentTitle("MooDLD Download")
                 .setSmallIcon(R.drawable.logo)
@@ -211,9 +210,9 @@ public class DLD_files extends AppCompatActivity {
                 String url = link.attr("abs:href");
 
                 if (link.attr("abs:href").indexOf("&parent=") > -1) {
-                   url = link.attr("abs:href").substring(0,link.attr("abs:href").indexOf("&parent="));
+                    url = link.attr("abs:href").substring(0, link.attr("abs:href").indexOf("&parent="));
                 }
-                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/discuss.php") && !nfthreads.contains(url) ) {
+                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/discuss.php") && !nfthreads.contains(url)) {
                     Log.d("Nf Links: ", url);
                     nfthreads.add(url);
                     JsoupAsyncTaskFetchNfThread jsoupAsyncTaskFetchNfThread = new JsoupAsyncTaskFetchNfThread();
@@ -249,7 +248,7 @@ public class DLD_files extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             for (Element link : links) {
                 if (link.attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
-                    Log.d("Nf thread downloadable",link.attr("abs:href"));
+                    Log.d("Nf thread downloadable", link.attr("abs:href"));
                 }
             }
         }
@@ -269,9 +268,9 @@ public class DLD_files extends AppCompatActivity {
 
             /**
              * Initialising custom countdown timer
-             * Ticks once every 500ms
+             * Ticks once every 1000ms
              */
-            cdt = new CountDownTimer(100*60*1000, 1000) {
+            cdt = new CountDownTimer(100 * 60 * 1000, 1000) {
                 @Override
                 public void onTick(long millisUntilFinished) {
                     notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
@@ -382,7 +381,7 @@ public class DLD_files extends AppCompatActivity {
 
             if (downloadsRemaining == 0) {
                 Log.d(TAG, "All downloads complete.");
-                TextView filenametv = (TextView)findViewById(R.id.textView);
+                TextView filenametv = (TextView) findViewById(R.id.textView);
                 filenametv.setText("All downloads complete!");
                 log.append("All downloads complete.\n");
                 scrollToBottom();
@@ -400,7 +399,7 @@ public class DLD_files extends AppCompatActivity {
     }
 
     void scrollToBottom() {
-        final ScrollView scrollView = (ScrollView)findViewById(R.id.scrollView);
+        final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView);
         scrollView.post(new Runnable() {
             @Override
             public void run() {

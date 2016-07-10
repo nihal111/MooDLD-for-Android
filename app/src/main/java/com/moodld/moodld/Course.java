@@ -13,45 +13,45 @@ public class Course {
     String lastNF;
 
     public Course(String name, String url) {
-        this.name = name ;
+        this.name = name;
         this.url = url;
         this.path = this.newsForumUrl = this.lastMain = this.lastNF = "";
         this.isChecked = Boolean.FALSE;
     }
 
     public Course(String name, String url, String path) {
-        this.name = name ;
+        this.name = name;
         this.url = url;
         this.path = path;
         this.newsForumUrl = this.lastMain = this.lastNF = "";
         this.isChecked = Boolean.FALSE;
     }
 
-    public String getName(){
+    public String getName() {
         return name;
     }
 
-    public String getPath(){
+    public String getPath() {
         return path;
     }
 
-    public String getUrl(){
+    public String getUrl() {
         return url;
     }
 
-    public Boolean isChecked(){
+    public Boolean isChecked() {
         return isChecked;
     }
 
-    public String getNewsforumurl(){
+    public String getNewsforumurl() {
         return newsForumUrl;
     }
 
-    public String getLastmain(){
+    public String getLastmain() {
         return lastMain;
     }
 
-    public String getLastnf(){
+    public String getLastnf() {
         return lastNF;
     }
 
@@ -88,7 +88,7 @@ public class Course {
     }
 
     public String toString() {
-        return "Name: " + name + " URL: " + url + " Path: " + path + "isChecked: " + isChecked + " newsForumUrl" + newsForumUrl + " lastMain" + lastMain + " lastNF" + lastNF  ;
+        return "Name: " + name + " URL: " + url + " Path: " + path + "isChecked: " + isChecked + " newsForumUrl" + newsForumUrl + " lastMain" + lastMain + " lastNF" + lastNF;
     }
 
 }
