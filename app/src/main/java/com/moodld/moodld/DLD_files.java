@@ -209,7 +209,6 @@ public class DLD_files extends AppCompatActivity {
             for (Element link : links) {
 
                 String url = link.attr("abs:href");
-
                 if (link.attr("abs:href").indexOf("&parent=") > -1) {
                    url = link.attr("abs:href").substring(0,link.attr("abs:href").indexOf("&parent="));
                 }
@@ -247,9 +246,13 @@ public class DLD_files extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
+            Boolean found = false;
             for (Element link : links) {
+                if (found) { found = false; continue; }
+
                 if (link.attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
                     Log.d("Nf thread downloadable",link.attr("abs:href"));
+                    found = true;
                 }
             }
         }
