@@ -3,29 +3,22 @@ package com.moodld.moodld;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.graphics.Typeface;
-import android.graphics.drawable.Drawable;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Environment;
 import android.support.v4.view.LayoutInflaterCompat;
-import android.support.v4.view.ViewCompat;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
-import android.widget.CheckBox;
-import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
-import com.mikepenz.fontawesome_typeface_library.FontAwesome;
-import com.mikepenz.iconics.IconicsDrawable;
 import com.mikepenz.iconics.context.IconicsLayoutInflater;
 
 import net.rdrei.android.dirchooser.DirectoryChooserActivity;
@@ -39,7 +32,6 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.List;
 
 public class Preferences extends AppCompatActivity {
@@ -191,52 +183,52 @@ public class Preferences extends AppCompatActivity {
 
     private class JsoupAsyncTask extends AsyncTask<String, String, Void> {
 
-            Elements links;
-            Document htmlDocument;
+        Elements links;
+        Document htmlDocument;
 
-            @Override
-            protected void onPreExecute() {
-                super.onPreExecute();
+        @Override
+        protected void onPreExecute() {
+            super.onPreExecute();
+        }
+
+        @Override
+        protected Void doInBackground(String... params) {
+            try {
+                htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[1]).get();
+                links = htmlDocument.select("a[href]");
+                Log.d(TAG, links.toString());
+            } catch (IOException e) {
+                e.printStackTrace();
             }
+            return null;
+        }
 
-            @Override
-            protected Void doInBackground(String... params) {
-                try {
-                    htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[1]).get();
-                    links = htmlDocument.select("a[href]");
-                    Log.d(TAG, links.toString());
-                } catch (IOException e) {
-                    e.printStackTrace();
-                }
-                return null;
-            }
-
-            @Override
-            protected void onPostExecute(Void result) {
-                Course course;
-                for (Element link : links) {
-                    if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
-                        course = new Course(link.text(), link.attr("abs:href"), rootDir + "/" + link.text().substring(0, 6));
-                        Boolean flag = false;
-                        for (int i = 0; i < CourseList.size(); i++) {
-                            if (CourseList.get(i).getUrl().equals(course.getUrl())) {
-                                flag = true;
-                            }
-                        }
-                        if (flag == false) {
-                            JsoupAsyncTaskFetchNewsForumUrl nf = new JsoupAsyncTaskFetchNewsForumUrl();
-                            nf.execute(course, sessionCookie);
-                            pending ++;
-                            Log.d(TAG, "Find nf url for " + pending + " " + course.getName());
+        @Override
+        protected void onPostExecute(Void result) {
+            Course course;
+            for (Element link : links) {
+                if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
+                    course = new Course(link.text(), link.attr("abs:href"), rootDir + "/" + link.text().substring(0, 6));
+                    Boolean flag = false;
+                    for (int i = 0; i < CourseList.size(); i++) {
+                        if (CourseList.get(i).getUrl().equals(course.getUrl())) {
+                            flag = true;
                         }
                     }
+                    if (flag == false) {
+                        JsoupAsyncTaskFetchNewsForumUrl nf = new JsoupAsyncTaskFetchNewsForumUrl();
+                        nf.execute(course, sessionCookie);
+                        pending++;
+                        Log.d(TAG, "Find nf url for " + pending + " " + course.getName());
+                    }
                 }
-
-                if (pending == 0) {
-                    onLoadComplete();
-                }
-
             }
+
+            if (pending == 0) {
+                onLoadComplete();
+            }
+
+        }
     }
 
     private void onLoadComplete() {
@@ -265,7 +257,7 @@ public class Preferences extends AppCompatActivity {
         @Override
         protected Void doInBackground(Object... params) {
             try {
-                course = (Course)params[0];
+                course = (Course) params[0];
                 htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", (String) params[1]).get();
                 links = htmlDocument.select("a[href]");
             } catch (IOException e) {
@@ -277,17 +269,17 @@ public class Preferences extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             for (Element link : links) {
-                    if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/view.php?id=")) {
-                        Log.d("Inside course link: ", link.toString());
-                        course.setNewsForumUrl(link.attr("abs:href"));
-                        CourseList.add(course);
-                        break;
-                    }
+                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/view.php?id=")) {
+                    Log.d("Inside course link: ", link.toString());
+                    course.setNewsForumUrl(link.attr("abs:href"));
+                    CourseList.add(course);
+                    break;
                 }
-            pending --;
+            }
+            pending--;
             if (pending == 0) {
                 onLoadComplete();
             }
-            }
         }
+    }
 }

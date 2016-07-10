@@ -3,11 +3,10 @@ package com.moodld.moodld;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
-import android.os.Bundle;
 import android.util.Log;
-import android.widget.Toast;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -26,19 +25,19 @@ public class Splash extends AppCompatActivity {
 
     private Handler handler = new Handler();
     private boolean handlerneeded = false, started = false;
-    private Long stime, timeout_time=5000L;
-    private Runnable timeout = new Runnable(){
+    private Long stime, timeout_time = 5000L;
+    private Runnable timeout = new Runnable() {
         public void run() {
-            if(handlerneeded) {
+            if (handlerneeded) {
 
-                if(!started) {
+                if (!started) {
                     stime = System.currentTimeMillis();
-                    started=true;
+                    started = true;
                 }
                 Long now = System.currentTimeMillis();
-                if(now > stime + timeout_time) {
-                    handlerneeded=false;
-                    started=false;
+                if (now > stime + timeout_time) {
+                    handlerneeded = false;
+                    started = false;
                     Intent intent = new Intent(Splash.this, LoginActivity.class);
                     startActivity(intent);
                     finish();
@@ -87,6 +86,7 @@ public class Splash extends AppCompatActivity {
         protected Void doInBackground(String... params) {
             CookieJar cookieJar = new CookieJar() {
                 private List<Cookie> cookies;
+
                 @Override
                 public void saveFromResponse(HttpUrl url, List<Cookie> cook) {
                     try {
@@ -96,12 +96,10 @@ public class Splash extends AppCompatActivity {
                         sessionCookie = c.value();
                         cookies.add(c);
                         Log.d(TAG, "Cookies = " + sessionCookie);
-                    }
-                    catch (NullPointerException npe) {
+                    } catch (NullPointerException npe) {
                         npe.printStackTrace();
                         //This will happen.
-                    }
-                    catch (IndexOutOfBoundsException e) {
+                    } catch (IndexOutOfBoundsException e) {
                         e.printStackTrace();
                         //This will also happen.
                     }
@@ -109,7 +107,7 @@ public class Splash extends AppCompatActivity {
 
                 @Override
                 public List<Cookie> loadForRequest(HttpUrl url) {
-                    if(cookies != null) {
+                    if (cookies != null) {
                         return cookies;
                     }
                     return new ArrayList<Cookie>();
@@ -131,14 +129,12 @@ public class Splash extends AppCompatActivity {
                 Response response = client.newCall(request).execute();
                 if (!response.isSuccessful()) {
                     Log.d(TAG, String.valueOf(response.code()));
-                }
-                else {
+                } else {
                     Log.d(TAG, String.valueOf(response.code()));
                     Log.d(TAG, response.body().string());
                     Log.d(TAG, response.toString());
                 }
-            }
-            catch (IOException ioe){
+            } catch (IOException ioe) {
                 ioe.printStackTrace();
             }
             return null;
