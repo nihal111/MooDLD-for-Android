@@ -46,7 +46,7 @@ public class DLD_files extends AppCompatActivity {
     String rootDir;
     private String sessionCookie;
     ArrayList<Course> CourseList = new ArrayList<Course>();
-    ArrayList<String> downloadLinks = new ArrayList<String>();
+    ArrayList<String> nfthreads = new ArrayList<String>();
     ArrayList<String> fileNames = new ArrayList<String>();
     SharedPreferences coursePrefs;
     private ProgressBar progressBar;
@@ -202,11 +202,17 @@ public class DLD_files extends AppCompatActivity {
         protected void onPostExecute(Void result) {
             log.append("Downloading " + course.getName() + " files.\n\n");
             scrollToBottom();
-            //Iterate over links and call DownloadFileFromUrl
+
             for (Element link : links) {
-//                if (!link.attr("abs:href").startsWith(mainPageUrl + "logout.php") && !link.attr("abs:href").startsWith(mainPageUrl + "mod/forum") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "badges") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "calendar")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "grade")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "message")) {
-                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/discuss.php")) {
-                    Log.d("Nf Links: ", link.attr("abs:href"));
+
+                String url = link.attr("abs:href");
+
+                if (link.attr("abs:href").indexOf("&parent=") > -1) {
+                   url = link.attr("abs:href").substring(0,link.attr("abs:href").indexOf("&parent="));
+                }
+                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/discuss.php") && !nfthreads.contains(url) ) {
+                    Log.d("Nf Links: ", url);
+                    nfthreads.add(url);
                     JsoupAsyncTaskFetchNfThread jsoupAsyncTaskFetchNfThread = new JsoupAsyncTaskFetchNfThread();
                     jsoupAsyncTaskFetchNfThread.execute(link.attr("abs:href"), sessionCookie);
                 }
