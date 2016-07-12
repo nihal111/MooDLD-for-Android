@@ -85,6 +85,12 @@ public class DLD_files extends AppCompatActivity {
         coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
         String json = coursePrefs.getString("CourseList", null);
         if (json != null) {
+            if (CourseList.isEmpty()){
+                Intent intent = new Intent(DLD_files.this, Preferences.class);
+                intent.putExtra("status",1);
+                startActivity(intent);
+                finish();
+            }
             Gson gson = new Gson();
             Type listType = new TypeToken<List<Course>>() {
             }.getType();
@@ -96,6 +102,7 @@ public class DLD_files extends AppCompatActivity {
         } else {
             Log.d(TAG, "No CourseList saved. Redirecting to Preferences.");
             Intent intent = new Intent(DLD_files.this, Preferences.class);
+            intent.putExtra("status",0);
             startActivity(intent);
             finish();
         }

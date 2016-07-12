@@ -16,6 +16,7 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -59,6 +60,16 @@ public class Preferences extends AppCompatActivity {
         coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
         // Find the ListView resource.
         listView = (ListView) findViewById(R.id.listView);
+
+        Bundle extras = getIntent().getExtras();
+        if(extras != null) {
+            if (extras.getInt("status") == 0) {
+                Toast.makeText(getApplicationContext(), "Please set your Preferences first!", Toast.LENGTH_LONG).show();
+            }
+            if (extras.getInt("status") == 1) {
+                Toast.makeText(getApplicationContext(), "No courses are selected. Please select courses and save!", Toast.LENGTH_LONG).show();
+            }
+        }
 
         dialog = new ProgressDialog(this);
         dialog.setTitle("Please wait");
