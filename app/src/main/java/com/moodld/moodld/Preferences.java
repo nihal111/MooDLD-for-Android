@@ -69,10 +69,10 @@ public class Preferences extends AppCompatActivity {
         rootDir = coursePrefs.getString("rootDir", null);
         if (rootDir == null) {
             rootDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-            root_dir_value.setText(rootDir);
+            root_dir_value.setText(rootDir + "/MooDLD");
             Log.d(TAG, "No saved rootDir. rootDir is now" + rootDir);
         } else {
-            root_dir_value.setText(rootDir);
+            root_dir_value.setText(rootDir + "/MooDLD");
         }
         // When item is tapped, toggle checked properties of CheckBox and Planet.
         listView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
@@ -171,12 +171,11 @@ public class Preferences extends AppCompatActivity {
 
         if (requestCode == REQUEST_DIRECTORY) {
             if (resultCode == DirectoryChooserActivity.RESULT_CODE_DIR_SELECTED) {
-                root_dir_value.setText(data
-                        .getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR));
                 rootDir = data
                         .getStringExtra(DirectoryChooserActivity.RESULT_SELECTED_DIR);
+                root_dir_value.setText(rootDir + "/MooDLD");
             } else {
-                root_dir_value.setText(rootDir);
+                root_dir_value.setText(rootDir + "/MooDLD");
             }
         }
     }
@@ -208,7 +207,7 @@ public class Preferences extends AppCompatActivity {
             Course course;
             for (Element link : links) {
                 if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
-                    course = new Course(link.text(), link.attr("abs:href"), rootDir + "/" + link.text().substring(0, 6));
+                    course = new Course(link.text(), link.attr("abs:href"), rootDir + "/MooDLD/" + link.text().substring(0, 6));
                     Boolean flag = false;
                     for (int i = 0; i < CourseList.size(); i++) {
                         if (CourseList.get(i).getUrl().equals(course.getUrl())) {
