@@ -3,6 +3,7 @@ package com.moodld.moodld;
 import android.app.NotificationManager;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.BitmapFactory;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.CountDownTimer;
@@ -85,20 +86,22 @@ public class DLD_files extends AppCompatActivity {
         coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
         String json = coursePrefs.getString("CourseList", null);
         if (json != null) {
+            Gson gson = new Gson();
+            Type listType = new TypeToken<List<Course>>() {
+            }.getType();
+            CourseList = (ArrayList<Course>) gson.fromJson(json, listType);
+            Log.d(TAG, "Courses fetched from saved data: " + CourseList.toString());
             if (CourseList.isEmpty()){
                 Intent intent = new Intent(DLD_files.this, Preferences.class);
                 intent.putExtra("status",1);
                 startActivity(intent);
                 finish();
             }
-            Gson gson = new Gson();
-            Type listType = new TypeToken<List<Course>>() {
-            }.getType();
-            CourseList = (ArrayList<Course>) gson.fromJson(json, listType);
-            Log.d(TAG, "Courses fetched from saved data: " + CourseList.toString());
-            log.append("Fetching courses from preferences.\n\n");
-            scrollToBottom();
-            downloadFromCourses();
+            else {
+                log.append("Fetching courses from preferences.\n\n");
+                scrollToBottom();
+                downloadFromCourses();
+            }
         } else {
             Log.d(TAG, "No CourseList saved. Redirecting to Preferences.");
             Intent intent = new Intent(DLD_files.this, Preferences.class);
@@ -116,6 +119,7 @@ public class DLD_files extends AppCompatActivity {
         notifBuilder = new NotificationCompat.Builder(this);
         notifBuilder.setContentTitle("MooDLD Download")
                 .setSmallIcon(R.drawable.logo)
+                .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.drawable.logo))
                 .setOngoing(true);
     }
 
@@ -136,7 +140,9 @@ public class DLD_files extends AppCompatActivity {
         }
     }
 
-
+    /*
+    * Downloads from main thread and folders inside
+    * */
     private class JsoupAsyncTask extends AsyncTask<Object, String, Void> {
 
         Course course;
@@ -171,6 +177,13 @@ public class DLD_files extends AppCompatActivity {
 //                if (!link.attr("abs:href").startsWith(mainPageUrl + "logout.php") && !link.attr("abs:href").startsWith(mainPageUrl + "mod/forum") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "badges") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "calendar")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "grade")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "message")) {
                 if (link.attr("abs:href").startsWith(mainPageUrl + "mod/resource")) {
                     linksToDownload.add(link);
+                }
+
+                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/folder")) {
+                    Log.d("Folder", link.toString());
+                }
+                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/assign")) {
+                    Log.d("Assignment", link.toString());
                 }
             }
             downloadsRemaining += linksToDownload.size();
