@@ -2,5 +2,12 @@
     <string name="app_name">MooDLD</string>
     <string name="select">&#xf046;</string>
     <string name="deselect">&#xf00d;</string>
+    <string name="nav_item_preference">Preferences</string>
+    <string name="nav_item_directory">Open Download Directory</string>
+    <string name="nav_item_about">About Team</string>
+    <string name="nav_item_help">Quick Help</string>
+    <string name="nav_item_feedback">Feedback</string>
+    <string name="nav_item_logout">Logout</string>
+    <string name="title_dashboard">MooDLD</string>
 
 </resources>
