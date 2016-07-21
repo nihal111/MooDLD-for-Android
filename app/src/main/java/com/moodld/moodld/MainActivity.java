@@ -8,6 +8,7 @@ import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.support.annotation.NonNull;
 import android.support.design.widget.Snackbar;
 import android.support.v4.app.ActivityCompat;
@@ -41,6 +42,7 @@ import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
 
+import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 
@@ -55,7 +57,7 @@ public class MainActivity extends AppCompatActivity {
     private ProgressBar progressBar;
     private Button logout, dld, preferences;
     private static final String TAG = "MainActivity";
-    private String sessionCookie = null, email = null;
+    private String sessionCookie = null, email = null, rootDir = null;
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
@@ -77,6 +79,13 @@ public class MainActivity extends AppCompatActivity {
         sessionCookie = prefs.getString("MoodleSession", null);
         email = prefs.getString("username", null);
         email = email + "@iitb.ac.in";
+
+        SharedPreferences coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
+        rootDir = coursePrefs.getString("rootDir", null);
+        if (rootDir == null)
+            rootDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+        rootDir = rootDir + "/MooDLD";
+
         if (sessionCookie != null) {
             JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
             jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
@@ -115,7 +124,6 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                Log.d(TAG, "Logged out.");
                 Intent intent = new Intent(MainActivity.this, Preferences.class);
                 startActivity(intent);
             }
@@ -137,7 +145,7 @@ public class MainActivity extends AppCompatActivity {
         PrimaryDrawerItem help = new PrimaryDrawerItem().withName(R.string.nav_item_help).withIdentifier(3).withSelectable(false).withIcon(FontAwesome.Icon.faw_question);
         PrimaryDrawerItem feedback = new PrimaryDrawerItem().withName(R.string.nav_item_feedback).withIdentifier(4).withSelectable(false).withIcon(FontAwesome.Icon.faw_comment);
         PrimaryDrawerItem about = new PrimaryDrawerItem().withName(R.string.nav_item_about).withIdentifier(5).withSelectable(false).withIcon(FontAwesome.Icon.faw_info);
-        PrimaryDrawerItem logout = new PrimaryDrawerItem().withName(R.string.nav_item_logout).withIdentifier(6).withSelectable(false).withIcon(FontAwesome.Icon.faw_sign_out);
+        final PrimaryDrawerItem logout = new PrimaryDrawerItem().withName(R.string.nav_item_logout).withIdentifier(6).withSelectable(false).withIcon(FontAwesome.Icon.faw_sign_out);
 
 //        DrawerImageLoader.init(new AbstractDrawerImageLoader() {
 //            @Override
@@ -169,16 +177,25 @@ public class MainActivity extends AppCompatActivity {
                     @Override
                     public boolean onItemClick(View view, int position, IDrawerItem drawerItem) {
                         if (drawerItem != null && drawerItem.getIdentifier() == 1) {
+                            Intent intent = new Intent(MainActivity.this, Preferences.class);
+                            startActivity(intent);
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 2) {
+                            Uri selectedUri = Uri.parse(rootDir);
+                            Intent intent = new Intent(Intent.ACTION_VIEW);
+                            intent.setDataAndType(selectedUri, "resource/folder");
+                            startActivity(intent);
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 3) {
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 4) {
+
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 5) {
+
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 6) {
+                            logout();
                         }
 
                         return false;
