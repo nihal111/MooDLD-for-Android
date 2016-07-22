@@ -11,7 +11,7 @@
     tools:context="com.moodld.moodld.Preferences">
 
     <LinearLayout
-        android:id="@+id/root_dir"
+        android:id="@+id/root_dir_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
 
@@ -21,7 +21,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="2"
             android:onClick="RootDirectorySelect"
-            android:text="DLD Directory" />
+            android:text="Download Directory" />
 
         <HorizontalScrollView
             android:layout_width="0dp"
@@ -36,8 +36,31 @@
                 android:text="Select a download directory"
                 android:textSize="18sp" />
         </HorizontalScrollView>
+        </LinearLayout>
 
+    <LinearLayout
+        android:id="@+id/button_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/root_dir_container">
 
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:id="@+id/select_all"
+            android:text="@string/select"
+            android:onClick="SelectAll" />
+
+        <Button
+            style="?android:attr/buttonStyleSmall"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="2"
+            android:id="@+id/deselect_all"
+            android:text="@string/deselect"
+            android:onClick="DeselectAll"/>
     </LinearLayout>
 
 
@@ -47,33 +70,13 @@
             android:layout_height="wrap_content"
             android:text="Save"
             android:onClick="Save"
-            android:layout_alignTop="@+id/deselect_all"
+            android:layout_alignParentBottom="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true"
             android:layout_alignParentLeft="true"
             android:layout_alignParentStart="true" />
 
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/select_all"
-            android:text="@string/select"
-            android:layout_above="@+id/listView"
-            android:layout_toLeftOf="@+id/deselect_all"
-            android:layout_toStartOf="@+id/deselect_all"
-            android:layout_marginRight="20dp"
-            android:layout_marginEnd="20dp"
-            android:onClick="SelectAll" />
 
-        <Button
-            style="?android:attr/buttonStyleSmall"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:id="@+id/deselect_all"
-            android:text="@string/deselect"
-            android:layout_below="@+id/root_dir"
-            android:layout_alignParentRight="true"
-            android:layout_alignParentEnd="true"
-            android:onClick="DeselectAll"/>
 
 
     <ListView
@@ -82,5 +85,6 @@
         android:layout_height="wrap_content"
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
-        android:layout_below="@+id/save_button" />
+        android:layout_below="@+id/button_container"
+        android:layout_above="@+id/save_button" />
 </RelativeLayout>

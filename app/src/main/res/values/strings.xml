@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name">MooDLD</string>
-    <string name="select">&#xf046;</string>
-    <string name="deselect">&#xf00d;</string>
+    <string name="select">&#xf046; Select All</string>
+    <string name="deselect">&#xf00d; Deselect All</string>
     <string name="nav_item_preference">Preferences</string>
     <string name="nav_item_directory">Open Download Directory</string>
     <string name="nav_item_about">About Team</string>
