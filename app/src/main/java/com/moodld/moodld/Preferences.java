@@ -38,7 +38,7 @@ import java.util.List;
 public class Preferences extends AppCompatActivity {
 
     private static final String TAG = "Preferences";
-    private final int REQUEST_DIRECTORY = 0;
+    private final int REQUEST_DIRECTORY = 0, MAX_RETRIES = 5;
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private ListView listView;
     private ArrayAdapter<Course> listAdapter;
@@ -193,8 +193,8 @@ public class Preferences extends AppCompatActivity {
 
     private class JsoupAsyncTask extends AsyncTask<String, String, Void> {
 
-        Elements links;
-        Document htmlDocument;
+        Elements links = new Elements();
+        Document htmlDocument = new Document("filler data");
 
         @Override
         protected void onPreExecute() {
@@ -204,9 +204,13 @@ public class Preferences extends AppCompatActivity {
         @Override
         protected Void doInBackground(String... params) {
             try {
-                htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[1]).get();
-                links = htmlDocument.select("a[href]");
-                Log.d(TAG, links.toString());
+                int retries = 0;
+                while (links.size() == 0 && retries < MAX_RETRIES) {
+                    htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[1]).get();
+                    links = htmlDocument.select("a[href]");
+                    Log.d(TAG, String.valueOf(links.size()));
+                    retries += 1;
+                }
             } catch (IOException e) {
                 e.printStackTrace();
             }
@@ -256,8 +260,8 @@ public class Preferences extends AppCompatActivity {
     private class JsoupAsyncTaskFetchNewsForumUrl extends AsyncTask<Object, String, Void> {
 
         Course course;
-        Elements links;
-        Document htmlDocument;
+        Elements links = new Elements();
+        Document htmlDocument = new Document("filler data");
 
         @Override
         protected void onPreExecute() {
@@ -268,10 +272,22 @@ public class Preferences extends AppCompatActivity {
         protected Void doInBackground(Object... params) {
             try {
                 course = (Course) params[0];
-                htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", (String) params[1]).get();
-                links = htmlDocument.select("a[href]");
+                int retries = 0;
+                while (links.size() == 0 && retries < MAX_RETRIES) {
+                    htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", (String) params[1]).get();
+                    links = htmlDocument.select("a[href]");
+                    Log.d(TAG, String.valueOf(links.size()));
+                    retries += 1;
+                }
+                if (links.size() == 0) {
+                    throw new IOException();
+                }
             } catch (IOException e) {
                 e.printStackTrace();
+                Intent noInternetIntent = new Intent(Preferences.this, MainActivity.class);
+                noInternetIntent.putExtra("noInternet", true);
+                startActivity(noInternetIntent);
+                finish();
             }
             return null;
         }
