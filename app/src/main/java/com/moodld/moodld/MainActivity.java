@@ -17,6 +17,7 @@ import android.support.v4.content.res.ResourcesCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.ImageView;
@@ -53,6 +54,7 @@ import okhttp3.Response;
 public class MainActivity extends AppCompatActivity {
 
     private Toolbar toolbar;
+    private Drawer result;
     public AccountHeader headerResult;
     private ProgressBar progressBar;
     private Button logout, dld, preferences;
@@ -63,6 +65,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> courseNames = new ArrayList<String>();
     private final int WRITE_EXTERNAL_STORAGE = 1;
     ProgressDialog dialog;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -134,6 +137,24 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    @Override
+    public boolean onKeyDown(int keycode, KeyEvent e) {
+        switch(keycode) {
+            case KeyEvent.KEYCODE_MENU:
+                result.openDrawer();
+                return true;
+            case KeyEvent.KEYCODE_BACK:
+                if (result.isDrawerOpen()) {
+                    result.closeDrawer();
+                }
+                else {
+                    finish();
+                }
+                return true;
+        }
+
+        return super.onKeyDown(keycode, e);
+    }
 
     public void InitialiseDrawer() {
         toolbar = (Toolbar) findViewById(R.id.toolbar);
@@ -166,7 +187,7 @@ public class MainActivity extends AppCompatActivity {
 
 
         //create the drawer and remember the `Drawer` result object
-        Drawer result = new DrawerBuilder()
+        result = new DrawerBuilder()
                 .withAccountHeader(headerResult)
                 .withActivity(this)
                 .withToolbar(toolbar)
