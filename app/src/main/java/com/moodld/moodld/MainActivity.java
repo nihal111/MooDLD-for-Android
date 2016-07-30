@@ -7,7 +7,6 @@ import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
 import android.graphics.Color;
-import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -25,11 +24,9 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
-import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -43,8 +40,6 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
-import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
-import com.mikepenz.materialdrawer.util.DrawerImageLoader;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -69,19 +64,12 @@ import okhttp3.Response;
 
 public class MainActivity extends AppCompatActivity {
 
-    private Toolbar toolbar;
-    private Drawer result;
-    public AccountHeader headerResult;
-    private ProgressBar progressBar;
-    private Button logout, dld, preferences;
     private static final String TAG = "MainActivity";
-    private String sessionCookie = null, email = null, rootDir = null;
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
-    private ArrayList<String> downloadLinks = new ArrayList<String>();
-    private ArrayList<String> courseNames = new ArrayList<String>();
     private final int WRITE_EXTERNAL_STORAGE = 1;
-    ProgressDialog dialog;
     private final int REQUEST_DIRECTORY = 0, NOTIFICATION_ID = 1;
+    public AccountHeader headerResult;
+    ProgressDialog dialog;
     ArrayList<Course> CourseList = new ArrayList<Course>();
     ArrayList<String> nfthreads = new ArrayList<String>();
     ArrayList<String> fileNames = new ArrayList<String>();
@@ -91,15 +79,21 @@ public class MainActivity extends AppCompatActivity {
     NotificationManager notifManager;
     NotificationCompat.Builder notifBuilder;
     boolean nfDownloaded = false;
-
+    private Toolbar toolbar;
+    private Drawer result;
+    private ProgressBar progressBar;
+    private Button dld;
+    private String sessionCookie = null, email = null, rootDir = null;
+    private ArrayList<String> downloadLinks = new ArrayList<String>();
+    private ArrayList<String> courseNames = new ArrayList<String>();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-//        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-//        progressBar.setVisibility(View.INVISIBLE);
+        progressBar = (ProgressBar) findViewById(R.id.progressBar);
+        progressBar.setVisibility(View.INVISIBLE);
 
         dialog = new ProgressDialog(this);
         dialog.setTitle("Please wait");
@@ -107,7 +101,7 @@ public class MainActivity extends AppCompatActivity {
         dialog.setCancelable(false);
         dialog.show();
 
-        log = (TextView)findViewById(R.id.log);
+        log = (TextView) findViewById(R.id.log);
 
         SharedPreferences prefs = getSharedPreferences("LoginDetails", MODE_PRIVATE);
         sessionCookie = prefs.getString("MoodleSession", null);
@@ -155,21 +149,19 @@ public class MainActivity extends AppCompatActivity {
             }.getType();
             CourseList = (ArrayList<Course>) gson.fromJson(json, listType);
             Log.d(TAG, "Courses fetched from saved data: " + CourseList.toString());
-            if (CourseList.isEmpty()){
+            if (CourseList.isEmpty()) {
                 Intent intent = new Intent(MainActivity.this, Preferences.class);
-                intent.putExtra("status",1);
+                intent.putExtra("status", 1);
                 startActivity(intent);
                 finish();
-            }
-            else {
+            } else {
                 log.append("Fetching courses from preferences.\n\n");
                 scrollToBottom();
-                downloadFromCourses();
             }
         } else {
             Log.d(TAG, "No CourseList saved. Redirecting to Preferences.");
             Intent intent = new Intent(MainActivity.this, Preferences.class);
-            intent.putExtra("status",0);
+            intent.putExtra("status", 0);
             startActivity(intent);
             finish();
         }
@@ -192,15 +184,14 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     public boolean onKeyDown(int keycode, KeyEvent e) {
-        switch(keycode) {
+        switch (keycode) {
             case KeyEvent.KEYCODE_MENU:
                 result.openDrawer();
                 return true;
             case KeyEvent.KEYCODE_BACK:
                 if (result.isDrawerOpen()) {
                     result.closeDrawer();
-                }
-                else {
+                } else {
                     finish();
                 }
                 return true;
@@ -407,6 +398,16 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    void scrollToBottom() {
+        final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView);
+        scrollView.post(new Runnable() {
+            @Override
+            public void run() {
+                scrollView.fullScroll(View.FOCUS_DOWN);
+            }
+        });
+    }
+
     /*
     * Downloads from main thread and folders inside
     * */
@@ -464,7 +465,6 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-
     private class JsoupAsyncTaskFetchNf extends AsyncTask<Object, String, Void> {
 
         Course course;
@@ -509,7 +509,6 @@ public class MainActivity extends AppCompatActivity {
             nfDownloaded = true;
         }
     }
-
 
     private class JsoupAsyncTaskFetchNfThread extends AsyncTask<String, String, Void> {
 
@@ -634,7 +633,7 @@ public class MainActivity extends AppCompatActivity {
                         @Override
                         public void run() {
                             TextView filenametv = (TextView) findViewById(R.id.textView);
-                            filenametv.setText(filename);
+//                            filenametv.setText(filename);
                             log.append("Downloading " + filename + " to " + file.getPath() + "\n\n");
                             scrollToBottom();
                             try {
@@ -703,7 +702,7 @@ public class MainActivity extends AppCompatActivity {
             if (nfDownloaded && downloadsRemaining == 0) {
                 Log.d(TAG, "All downloads complete.");
                 TextView filenametv = (TextView) findViewById(R.id.textView);
-                filenametv.setText("All downloads complete!");
+//                filenametv.setText("All downloads complete!");
                 log.append("All downloads complete.\n");
                 scrollToBottom();
 
@@ -717,16 +716,6 @@ public class MainActivity extends AppCompatActivity {
             progressBar.setVisibility(View.INVISIBLE);
         }
 
-    }
-
-    void scrollToBottom() {
-        final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView);
-        scrollView.post(new Runnable() {
-            @Override
-            public void run() {
-                scrollView.fullScroll(View.FOCUS_DOWN);
-            }
-        });
     }
 
     private class JsoupNameAsyncTask extends AsyncTask<String, String, Void> {
@@ -788,6 +777,12 @@ public class MainActivity extends AppCompatActivity {
 
             return response;
         }
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        notifManager.cancelAll();
     }
 
 }
