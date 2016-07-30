@@ -30,50 +30,18 @@
     <!--</RelativeLayout>-->
 
 
-    <Button
-        android:id="@+id/logout"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_alignParentBottom="true"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
-        android:background="@drawable/rounded_button"
-        android:singleLine="false"
-        android:text="Logout" />
 
-    <Button
-        android:id="@+id/preferences"
-        android:layout_width="200dp"
-        android:layout_height="wrap_content"
-        android:layout_above="@id/logout"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="20dp"
-        android:background="@drawable/rounded_button"
-        android:singleLine="false"
-        android:text="Preferences" />
+
 
     <Button
         android:id="@+id/dld"
         android:layout_width="200dp"
         android:layout_height="wrap_content"
-        android:layout_above="@id/preferences"
         android:layout_centerHorizontal="true"
         android:layout_marginBottom="20dp"
         android:background="@drawable/rounded_button"
         android:singleLine="false"
         android:text="DLD files" />
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:minHeight="40dp"
-        android:maxHeight="40dp"
-        android:layout_below="@+id/relativeLayout"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="120dp"
-        android:background="@color/moodleDark"
-        android:max="100" />
 
 </RelativeLayout>

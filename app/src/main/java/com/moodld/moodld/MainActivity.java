@@ -97,19 +97,8 @@ public class MainActivity extends AppCompatActivity {
             logout();
         }
 
-        logout = (Button) findViewById(R.id.logout);
         dld = (Button) findViewById(R.id.dld);
-        preferences = (Button) findViewById(R.id.preferences);
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.INVISIBLE);
 
-
-        logout.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                logout();
-            }
-        });
 
         dld.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -123,14 +112,6 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        preferences.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                Intent intent = new Intent(MainActivity.this, Preferences.class);
-                startActivity(intent);
-            }
-        });
 
 
         InitialiseDrawer();
