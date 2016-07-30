@@ -34,19 +34,38 @@
         android:id="@+id/dld"
         android:layout_width="fill_parent"
         android:background="#214193"
-        android:layout_height="250dp">
+        android:layout_height="250dp"
+        android:layout_marginTop="55dp">
 
 
         <com.github.lzyzsd.circleprogress.ArcProgress
             android:id="@+id/arc_progress"
             android:background="#214193"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
-            custom:arc_progress="55"
-            custom:arc_bottom_text="MEMORY"
-            android:layout_gravity="center"
+            android:layout_width="200dp"
+            android:layout_height="200dp"
+            custom:arc_text_size="25pt"
+            custom:arc_bottom_text_size="10pt"
+            custom:arc_suffix_text_size="11pt"
+            custom:arc_stroke_width="10dp"
+            custom:arc_progress="100"
+            custom:arc_bottom_text="COURSE"
+            android:layout_gravity="center_horizontal|top"
             android:layout_below="@+id/frameLayout"
             android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:maxLines="1"
+            android:ellipsize="end"
+            android:singleLine="true"
+            android:layout_height="wrap_content"
+            android:text=""
+            android:padding="3dp"
+            android:textSize="10pt"
+            android:gravity="center"
+            android:layout_marginBottom="5dp"
+            android:id="@+id/filenametv"
+            android:layout_gravity="left|bottom" />
 
 
     </FrameLayout>
@@ -61,12 +80,13 @@
         android:layout_alignParentLeft="true"
         android:layout_alignParentStart="true"
         android:layout_alignParentBottom="true"
-        android:layout_below="@+id/progressBar">
+        android:layout_below="@+id/dld">
 
 
 
         <TextView
             android:id="@+id/log"
+            android:padding="15dp"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:gravity="bottom"
@@ -75,16 +95,5 @@
             android:layout_gravity="center_horizontal|top" />
     </ScrollView>
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="#eee"
-        android:max="100"
-        android:layout_gravity="right|bottom"
-        android:layout_below="@+id/dld"
-        android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

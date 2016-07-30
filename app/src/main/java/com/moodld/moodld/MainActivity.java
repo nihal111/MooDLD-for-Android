@@ -23,13 +23,12 @@ import android.support.v7.widget.Toolbar;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
-import android.widget.Button;
 import android.widget.FrameLayout;
-import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
 import com.github.lzyzsd.circleprogress.ArcProgress;
+import com.google.android.gms.auth.firstparty.shared.FACLConfig;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
@@ -83,20 +82,17 @@ public class MainActivity extends AppCompatActivity {
     boolean nfDownloaded = false;
     private Toolbar toolbar;
     private Drawer result;
-    private ProgressBar progressBar;
     private FrameLayout dld;
     private String sessionCookie = null, email = null, rootDir = null;
     private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
     private ArcProgress arcProgress;
+    TextView filenametv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-
-        progressBar = (ProgressBar) findViewById(R.id.progressBar);
-        progressBar.setVisibility(View.INVISIBLE);
 
         dialog = new ProgressDialog(this);
         dialog.setTitle("Please wait");
@@ -111,16 +107,27 @@ public class MainActivity extends AppCompatActivity {
         email = prefs.getString("username", null);
         email = email + "@iitb.ac.in";
 
+        /* Setting Color and Contrast Color */
         dld = (FrameLayout) findViewById(R.id.dld);
         String color = prefs.getString("color", null);
         String contrast = prefs.getString("contrast", null);
         dld.setBackgroundColor(Color.parseColor(color));
 
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        toolbar.setBackgroundColor(Color.parseColor(color));
+
         arcProgress = (ArcProgress) findViewById(R.id.arc_progress);
-        arcProgress.bringToFront();
+        if (arcProgress != null) {
+            arcProgress.setVisibility(View.INVISIBLE);
+            arcProgress.bringToFront();
+        }
         arcProgress.setBackgroundColor(Color.parseColor(color));
         arcProgress.setTextColor(Color.parseColor(contrast));
         arcProgress.setUnfinishedStrokeColor(Color.parseColor(contrast));
+
+        filenametv = (TextView) findViewById(R.id.filenametv);
+        filenametv.setTextColor(Color.parseColor(contrast));
+
 
         SharedPreferences coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
         rootDir = coursePrefs.getString("rootDir", null);
@@ -143,7 +150,10 @@ public class MainActivity extends AppCompatActivity {
                         != PackageManager.PERMISSION_GRANTED) {
                     AskWritePermission();
                 } else {
-                    dldfiles();
+                    downloadFromCourses();
+                    dld.setEnabled(false);
+                    log.setText("");
+                    log.append("Fetching courses from preferences.\n\n");
                 }
             }
         });
@@ -165,7 +175,7 @@ public class MainActivity extends AppCompatActivity {
                 startActivity(intent);
                 finish();
             } else {
-                log.append("Fetching courses from preferences.\n\n");
+                log.append("Tap the above screen to start downloading.\n\n");
                 scrollToBottom();
             }
         } else {
@@ -211,7 +221,6 @@ public class MainActivity extends AppCompatActivity {
     }
 
     public void InitialiseDrawer() {
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
         getSupportActionBar().setTitle(R.string.title_dashboard);
         //if you want to update the items at a later time it is recommended to keep it in a variable
@@ -310,17 +319,6 @@ public class MainActivity extends AppCompatActivity {
         finish();
     }
 
-    //onClick of "DLD Files" button
-    private void dldfiles() {
-        Log.d(TAG, "DLD Files");
-        downloadFromCourses();
-//        String file_url = "http://moodle.iitb.ac.in/pluginfile.php/53165/mod_resource/content/0/PH_108_Kumar_ppt.pdf";
-//        String address = "downloaded_file.pdf";
-//        //Download call
-//        new DownloadFileFromURL().execute(file_url, address);
-
-    }
-
     public void AskWritePermission() {
         // Requesting Storage Permission
         if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
@@ -369,7 +367,7 @@ public class MainActivity extends AppCompatActivity {
                         && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                     // permission was granted, yay! Do the
                     // task you need to do.
-                    dldfiles();
+                    downloadFromCourses();
 
                 } else {
 
@@ -395,6 +393,7 @@ public class MainActivity extends AppCompatActivity {
      *
      */
     private void downloadFromCourses() {
+        arcProgress.setVisibility(View.VISIBLE);
         for (int i = 0; i < CourseList.size(); i++) {
             Course course = CourseList.get(i);
             if (course.isChecked()) {
@@ -586,8 +585,7 @@ public class MainActivity extends AppCompatActivity {
          */
         @Override
         protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-
+            arcProgress.setVisibility(View.VISIBLE);
             /**
              * Initialising custom countdown timer
              * Ticks once every 1000ms
@@ -626,7 +624,7 @@ public class MainActivity extends AppCompatActivity {
                 BufferedInputStream input = new BufferedInputStream(is);
 //                File ExternalStorageRoot = Environment.getExternalStorageDirectory();
 //                params[1] = params[1].replace(" ","");
-                String dir = params[1].substring(0, endIndex);
+                final String dir = params[1].substring(0, endIndex);
                 final String filename = params[1].substring(endIndex + 1);
                 Log.d(TAG, "Directory = " + dir);
                 Log.d(TAG, "File name = " + filename);
@@ -642,13 +640,12 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            TextView filenametv = (TextView) findViewById(R.id.textView);
-//                            filenametv.setText(filename);
+                            arcProgress.setBottomText(dir.substring(0,6));
+                            filenametv.setText(filename);
                             log.append("Downloading " + filename + " to " + file.getPath() + "\n\n");
                             scrollToBottom();
                             try {
                                 contentLength = Integer.parseInt(response.header("Content-Length"));
-                                progressBar.setMax(contentLength);
                                 Log.d(TAG, "Content length = " + response.header("Content-Length"));
                             } catch (Exception e) {
                                 e.printStackTrace();
@@ -694,8 +691,7 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected void onProgressUpdate(Integer... values) {
-            progressBar.setVisibility(View.VISIBLE);
-            progressBar.setProgress(values[0]);
+            arcProgress.setVisibility(View.VISIBLE);
             arcProgress.setProgress(values[0]*100/contentLength);
             notifBuilder.setProgress(contentLength, values[0], false);
         }
@@ -712,8 +708,8 @@ public class MainActivity extends AppCompatActivity {
 
             if (nfDownloaded && downloadsRemaining == 0) {
                 Log.d(TAG, "All downloads complete.");
-                TextView filenametv = (TextView) findViewById(R.id.textView);
-//                filenametv.setText("All downloads complete!");
+                dld.setEnabled(true);
+                filenametv.setText("All downloads complete!");
                 log.append("All downloads complete.\n");
                 scrollToBottom();
 
@@ -723,8 +719,8 @@ public class MainActivity extends AppCompatActivity {
                 notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
             }
             Log.d(TAG, "Downloads remaining = " + downloadsRemaining);
-            progressBar.setProgress(0);
-            progressBar.setVisibility(View.INVISIBLE);
+            arcProgress.setProgress(100);
+//            arcProgress.setVisibility(View.INVISIBLE);
         }
 
     }
