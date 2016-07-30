@@ -5,6 +5,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
+import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -71,12 +72,17 @@ public class LoginActivity extends AppCompatActivity {
             login.setBackgroundColor(Color.parseColor(contrast));
         }
 
+        final EditText ed1 = (EditText) findViewById(R.id.name);
+        final EditText ed2 = (EditText) findViewById(R.id.pass);
+
+        ed1.getBackground().setColorFilter(Color.parseColor(contrast), PorterDuff.Mode.SRC_ATOP);
+        ed2.getBackground().setColorFilter(Color.parseColor(contrast), PorterDuff.Mode.SRC_ATOP);
+
         login.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
-                EditText ed1 = (EditText) findViewById(R.id.name);
-                EditText ed2 = (EditText) findViewById(R.id.pass);
+
                 try {
                     String username = URLEncoder.encode(ed1.getText().toString(), "UTF-8");
                     String password = URLEncoder.encode(ed2.getText().toString(), "UTF-8");

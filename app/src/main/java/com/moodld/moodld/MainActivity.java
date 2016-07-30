@@ -26,6 +26,7 @@ import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.ScrollView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.github.lzyzsd.circleprogress.ArcProgress;
 import com.google.android.gms.auth.firstparty.shared.FACLConfig;
@@ -130,10 +131,6 @@ public class MainActivity extends AppCompatActivity {
 
 
         SharedPreferences coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
-        rootDir = coursePrefs.getString("rootDir", null);
-        if (rootDir == null)
-            rootDir = Environment.getExternalStorageDirectory().getAbsolutePath();
-        rootDir = rootDir + "/MooDLD";
 
         if (sessionCookie != null) {
             JsoupNameAsyncTask jsoupNameAsyncTask = new JsoupNameAsyncTask();
@@ -142,21 +139,6 @@ public class MainActivity extends AppCompatActivity {
             Log.d(TAG, "Session cookie not present");
             logout();
         }
-
-        dld.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
-                        != PackageManager.PERMISSION_GRANTED) {
-                    AskWritePermission();
-                } else {
-                    downloadFromCourses();
-                    dld.setEnabled(false);
-                    log.setText("");
-                    log.append("Fetching courses from preferences.\n\n");
-                }
-            }
-        });
 
         /**
          * Getting CourseList from SharedPreferences
@@ -186,7 +168,15 @@ public class MainActivity extends AppCompatActivity {
             finish();
         }
         // Getting root directory from shared preferences
-        rootDir = coursePrefs.getString("rootDir", Environment.getExternalStorageDirectory().getPath());
+        rootDir = coursePrefs.getString("rootDir", null);
+        if (rootDir == null) {
+            rootDir = Environment.getExternalStorageDirectory().getAbsolutePath();
+            File directory = new File(rootDir, "MooDLD/");
+            if (!directory.exists()) {
+                directory.mkdirs();
+            }
+        }
+        rootDir = rootDir + "/MooDLD";
 
         /**
          * Initialising Notifications setup for progress update
@@ -199,6 +189,21 @@ public class MainActivity extends AppCompatActivity {
                 .setOngoing(true);
 
         InitialiseDrawer();
+
+        dld.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                if (ContextCompat.checkSelfPermission(MainActivity.this, android.Manifest.permission.WRITE_EXTERNAL_STORAGE)
+                        != PackageManager.PERMISSION_GRANTED) {
+                    AskWritePermission();
+                } else {
+                    downloadFromCourses();
+                    dld.setEnabled(false);
+                    log.setText("");
+                    log.append("Fetching courses from preferences.\n\n");
+                }
+            }
+        });
 
     }
 
@@ -265,15 +270,23 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(intent);
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 2) {
-                            Uri selectedUri = Uri.parse(rootDir);
-                            Intent intent = new Intent(Intent.ACTION_VIEW);
-                            intent.setDataAndType(selectedUri, "resource/folder");
-                            startActivity(intent);
+                            try {
+                                Log.d(TAG, "Opening " + rootDir);
+                                Uri selectedUri = Uri.parse(rootDir);
+                                Intent intent = new Intent(Intent.ACTION_VIEW);
+                                intent.setDataAndType(selectedUri, "resource/folder");
+                                startActivity(intent);
+                            } catch (Exception e) {
+                                Toast.makeText(getApplicationContext(), "File Manager not found. Manually open " + rootDir, Toast.LENGTH_LONG).show();
+                            }
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 3) {
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 4) {
-
+                            String url = "https://github.com/nihal111/MooDLD-for-Android/issues/new";
+                            Intent i = new Intent(Intent.ACTION_VIEW);
+                            i.setData(Uri.parse(url));
+                            startActivity(i);
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 5) {
 

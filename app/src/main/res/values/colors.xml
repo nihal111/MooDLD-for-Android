@@ -2,7 +2,7 @@
 <resources>
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
-    <color name="colorAccent">#FF4081</color>
+    <color name="colorAccent">#FFFFFF</color>
     <color name="moodle">#E6A141</color>
     <color name="moodleDark">#F28033</color>
     <string-array name="colors">
@@ -15,11 +15,11 @@
     </string-array>
 
     <string-array name="contrast">
-        <item>#040000</item>
-        <item>#690101</item>
-        <item>#505050</item>
+        <item>#040A04</item>
+        <item>#19343D</item>
         <item>#2C562D</item>
-        <item>#505050</item>
+        <item>#005604</item>
+        <item>#B26F00</item>
         <item>#ADC0F7</item>
     </string-array>
 </resources>
