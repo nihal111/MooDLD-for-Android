@@ -39,4 +39,5 @@ dependencies {
         transitive = true
     }
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
+    compile 'com.github.lzyzsd:circleprogress:1.1.0@aar'
 }

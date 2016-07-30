@@ -3,6 +3,7 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    xmlns:custom="http://schemas.android.com/apk/res-auto"
     android:paddingBottom="@dimen/activity_vertical_margin"
     tools:context="com.moodld.moodld.MainActivity">
     <include
@@ -29,43 +30,54 @@
 
     <!--</RelativeLayout>-->
 
-    <ProgressBar
-        android:id="@+id/progressBar"
-        style="?android:attr/progressBarStyleHorizontal"
+    <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:layout_width="fill_parent"
+        android:layout_height="250dp">
+
+        <Button
+            android:id="@+id/dld"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_centerHorizontal="true"
+            android:background="@drawable/rounded_button"
+            android:singleLine="false"
+            android:layout_marginTop="55dp"
+            android:text=""
+            android:layout_gravity="center_horizontal|bottom" />
+
+        <com.github.lzyzsd.circleprogress.ArcProgress
+            android:id="@+id/arc_progress"
+            android:background="#214193"
+            android:layout_width="100dp"
+            android:layout_height="100dp"
+            custom:arc_progress="55"
+            custom:arc_bottom_text="MEMORY"
+            android:layout_centerVertical="true"
+            android:layout_centerHorizontal="true"
+            android:layout_gravity="center_horizontal|bottom" />
+
+
+
+    </FrameLayout>
+
+    <TextView
+        android:id="@+id/log"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@+id/dld"
-        android:layout_centerHorizontal="true"
-        android:background="#eee"
-        android:max="100" />
-
-    <Button
-        android:id="@+id/dld"
-        android:layout_width="match_parent"
-        android:layout_height="250dp"
-        android:layout_centerHorizontal="true"
-        android:background="@drawable/rounded_button"
-        android:singleLine="false"
-        android:layout_marginTop="55dp"
-        android:text="DLD files" />
+        android:gravity="bottom"
+        android:text=""
+        android:textSize="16sp"
+        android:layout_gravity="center_horizontal|top" />
 
     <ScrollView
         android:id="@+id/scrollView"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:minHeight="200dp"
-        android:layout_below="@+id/progressBar"
+        android:layout_gravity="center_horizontal|bottom"
+        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true"
-        android:layout_alignParentBottom="true">
-
-        <TextView
-            android:id="@+id/log"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:gravity="bottom"
-            android:text=""
-            android:textSize="16sp" />
+        android:layout_alignParentStart="true">
 
     </ScrollView>
 
