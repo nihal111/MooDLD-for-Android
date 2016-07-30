@@ -1,16 +1,20 @@
 package com.moodld.moodld;
 
+import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v7.app.AppCompatActivity;
 import android.util.Log;
+import android.widget.RelativeLayout;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
@@ -56,6 +60,26 @@ public class Splash extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_splash);
+
+
+        String[] colors = getResources().getStringArray(R.array.colors);
+        String[] contrastcolors = getResources().getStringArray(R.array.contrast);
+        RelativeLayout li=(RelativeLayout)findViewById(R.id.background);
+        Integer seed = new Random().nextInt(colors.length);
+        String color = colors[seed];
+        String contrast = contrastcolors[seed];
+
+        try {
+            li.setBackgroundColor(Color.parseColor(color));
+        } catch (NullPointerException e) {
+            e.printStackTrace();
+        }
+        SharedPreferences preferences = Splash.this.getSharedPreferences("LoginDetails", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("color", color);
+        editor.putString("contrast", contrast);
+        editor.apply();
+        Log.d(TAG, "Saved Color:" + color);
 
         final SharedPreferences prefs = Splash.this.getSharedPreferences("LoginDetails", MODE_PRIVATE);
         final String username = prefs.getString("username", null);

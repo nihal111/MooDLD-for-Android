@@ -5,4 +5,21 @@
     <color name="colorAccent">#FF4081</color>
     <color name="moodle">#E6A141</color>
     <color name="moodleDark">#F28033</color>
+    <string-array name="colors">
+        <item>#E71F56</item>
+        <item>#36A7A9</item>
+        <item>#1FD9E2</item>
+        <item>#FFC617</item>
+        <item>#001A33</item>
+        <item>#662D91</item>
+    </string-array>
+
+    <string-array name="contrast">
+        <item>#040000</item>
+        <item>#690101</item>
+        <item>#505050</item>
+        <item>#FFC617</item>
+        <item>#505050</item>
+        <item>#ADC0F7</item>
+    </string-array>
 </resources>

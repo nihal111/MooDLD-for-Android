@@ -38,4 +38,5 @@ dependencies {
     compile('com.mikepenz:materialdrawer:5.1.6@aar') {
         transitive = true
     }
+    compile 'com.google.android.gms:play-services-appindexing:8.1.0'
 }
