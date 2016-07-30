@@ -31,19 +31,11 @@
     <!--</RelativeLayout>-->
 
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+        android:id="@+id/dld"
         android:layout_width="fill_parent"
+        android:background="#214193"
         android:layout_height="250dp">
 
-        <Button
-            android:id="@+id/dld"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_centerHorizontal="true"
-            android:background="@drawable/rounded_button"
-            android:singleLine="false"
-            android:layout_marginTop="55dp"
-            android:text=""
-            android:layout_gravity="center_horizontal|bottom" />
 
         <com.github.lzyzsd.circleprogress.ArcProgress
             android:id="@+id/arc_progress"
@@ -52,22 +44,13 @@
             android:layout_height="100dp"
             custom:arc_progress="55"
             custom:arc_bottom_text="MEMORY"
-            android:layout_centerVertical="true"
-            android:layout_centerHorizontal="true"
-            android:layout_gravity="center_horizontal|bottom" />
-
+            android:layout_gravity="center"
+            android:layout_below="@+id/frameLayout"
+            android:layout_centerHorizontal="true" />
 
 
     </FrameLayout>
 
-    <TextView
-        android:id="@+id/log"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="bottom"
-        android:text=""
-        android:textSize="16sp"
-        android:layout_gravity="center_horizontal|top" />
 
     <ScrollView
         android:id="@+id/scrollView"
@@ -75,10 +58,33 @@
         android:layout_height="wrap_content"
         android:minHeight="200dp"
         android:layout_gravity="center_horizontal|bottom"
-        android:layout_alignParentBottom="true"
         android:layout_alignParentLeft="true"
-        android:layout_alignParentStart="true">
+        android:layout_alignParentStart="true"
+        android:layout_alignParentBottom="true"
+        android:layout_below="@+id/progressBar">
 
+
+
+        <TextView
+            android:id="@+id/log"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="bottom"
+            android:text=""
+            android:textSize="16sp"
+            android:layout_gravity="center_horizontal|top" />
     </ScrollView>
+
+    <ProgressBar
+        android:id="@+id/progressBar"
+        style="?android:attr/progressBarStyleHorizontal"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="#eee"
+        android:max="100"
+        android:layout_gravity="right|bottom"
+        android:layout_below="@+id/dld"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true" />
 
 </RelativeLayout>

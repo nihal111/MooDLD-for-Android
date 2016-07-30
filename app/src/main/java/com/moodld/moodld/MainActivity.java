@@ -24,10 +24,12 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.ScrollView;
 import android.widget.TextView;
 
+import com.github.lzyzsd.circleprogress.ArcProgress;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
@@ -82,10 +84,11 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private Drawer result;
     private ProgressBar progressBar;
-    private Button dld;
+    private FrameLayout dld;
     private String sessionCookie = null, email = null, rootDir = null;
     private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
+    private ArcProgress arcProgress;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -108,9 +111,16 @@ public class MainActivity extends AppCompatActivity {
         email = prefs.getString("username", null);
         email = email + "@iitb.ac.in";
 
-        dld = (Button) findViewById(R.id.dld);
+        dld = (FrameLayout) findViewById(R.id.dld);
         String color = prefs.getString("color", null);
+        String contrast = prefs.getString("contrast", null);
         dld.setBackgroundColor(Color.parseColor(color));
+
+        arcProgress = (ArcProgress) findViewById(R.id.arc_progress);
+        arcProgress.bringToFront();
+        arcProgress.setBackgroundColor(Color.parseColor(color));
+        arcProgress.setTextColor(Color.parseColor(contrast));
+        arcProgress.setUnfinishedStrokeColor(Color.parseColor(contrast));
 
         SharedPreferences coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
         rootDir = coursePrefs.getString("rootDir", null);
@@ -686,6 +696,7 @@ public class MainActivity extends AppCompatActivity {
         protected void onProgressUpdate(Integer... values) {
             progressBar.setVisibility(View.VISIBLE);
             progressBar.setProgress(values[0]);
+            arcProgress.setProgress(values[0]*100/contentLength);
             notifBuilder.setProgress(contentLength, values[0], false);
         }
 
