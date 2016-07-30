@@ -33,14 +33,14 @@
     <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/dld"
         android:layout_width="fill_parent"
-        android:background="#214193"
+        android:background="#E71F56"
         android:layout_height="250dp"
         android:layout_marginTop="55dp">
 
 
         <com.github.lzyzsd.circleprogress.ArcProgress
             android:id="@+id/arc_progress"
-            android:background="#214193"
+            android:background="#E71F56"
             android:layout_width="200dp"
             android:layout_height="200dp"
             custom:arc_text_size="25pt"

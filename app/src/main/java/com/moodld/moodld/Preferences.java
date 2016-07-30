@@ -3,6 +3,7 @@ package com.moodld.moodld;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -15,6 +16,7 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.ListView;
+import android.widget.RelativeLayout;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -55,6 +57,22 @@ public class Preferences extends AppCompatActivity {
         LayoutInflaterCompat.setFactory(getLayoutInflater(), new IconicsLayoutInflater(getDelegate()));
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_preferences);
+
+        final SharedPreferences prefs = Preferences.this.getSharedPreferences("LoginDetails", MODE_PRIVATE);
+        final String color = prefs.getString("color", null);
+        final String contrast = prefs.getString("contrast", null);
+
+        Button select_all = (Button) findViewById(R.id.select_all);
+        Button deselect_all = (Button) findViewById(R.id.deselect_all);
+        Button root_dir_button = (Button) findViewById(R.id.root_dir_button);
+        Button save = (Button) findViewById(R.id.save_button);
+        RelativeLayout PreferencesBackground = (RelativeLayout) findViewById(R.id.PreferencesBackground);
+
+        PreferencesBackground.setBackgroundColor(Color.parseColor(color));
+        root_dir_button.setBackgroundColor(Color.parseColor(contrast));
+        select_all.setBackgroundColor(Color.parseColor(contrast));
+        deselect_all.setBackgroundColor(Color.parseColor(contrast));
+        save.setBackgroundColor(Color.parseColor(contrast));
 
         root_dir_value = (TextView) findViewById(R.id.root_dir_value);
         coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
@@ -98,8 +116,6 @@ public class Preferences extends AppCompatActivity {
             }
         });
 
-        Button select_all = (Button) findViewById(R.id.select_all);
-        Button deselect_all = (Button) findViewById(R.id.deselect_all);
         try {
             select_all.setTypeface(font);
             deselect_all.setTypeface(font);
