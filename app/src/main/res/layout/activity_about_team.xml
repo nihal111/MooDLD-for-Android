@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/AboutBackground"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -7,6 +8,152 @@
     android:paddingLeft="@dimen/activity_horizontal_margin"
     android:paddingRight="@dimen/activity_horizontal_margin"
     android:paddingTop="@dimen/activity_vertical_margin"
+    android:background="#E71F56"
     tools:context="com.moodld.moodld.AboutTeam">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="The Team"
+        android:id="@+id/TheTeam"
+        android:gravity="center"
+        android:textSize="15pt"
+        android:textStyle="bold"
+        android:layout_alignParentTop="true"
+        android:layout_alignParentLeft="true"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentRight="true"
+        android:layout_alignParentEnd="true" />
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/TheTeam"
+        >
+        
+        <RelativeLayout
+            android:layout_width="match_parent"
+            android:layout_height="match_parent">
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Nihal Singh"
+            android:id="@+id/Nihal_Singh"
+            android:layout_marginTop="5dp"
+            android:gravity="center"
+            android:textSize="10pt"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/nihal111img"
+            android:layout_marginTop="5dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/nihal111"
+            app:civ_border_width="2dp"
+            app:civ_border_color="#FF000000"
+            android:layout_below="@+id/Nihal_Singh"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\@nihal111"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:textSize="6pt"
+            android:id="@+id/nihal111"
+            android:layout_below="@+id/nihal111img"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Arpan Banerjee"
+            android:id="@+id/Arpan_Banerjee"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textSize="10pt"
+            android:layout_below="@+id/nihal111"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/arpan98img"
+            android:layout_marginTop="5dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/arpan98"
+            app:civ_border_width="2dp"
+            app:civ_border_color="#FF000000"
+            android:layout_below="@+id/Arpan_Banerjee"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\@arpan98"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:textSize="6pt"
+            android:id="@+id/arpan98"
+            android:layout_below="@+id/arpan98img"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Akash Trehan"
+            android:id="@+id/Akash_Trehan"
+            android:layout_marginTop="10dp"
+            android:gravity="center"
+            android:textSize="10pt"
+            android:layout_below="@+id/arpan98"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+
+        <de.hdodenhof.circleimageview.CircleImageView
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/codemaxximg"
+            android:layout_marginTop="5dp"
+            android:layout_width="150dp"
+            android:layout_height="150dp"
+            android:src="@drawable/codemaxx"
+            app:civ_border_width="2dp"
+            app:civ_border_color="#FF000000"
+            android:layout_below="@+id/Akash_Trehan"
+            android:layout_centerHorizontal="true" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="\@codemaxx"
+            android:gravity="center"
+            android:layout_marginTop="5dp"
+            android:textSize="6pt"
+            android:id="@+id/codemaxx"
+            android:layout_below="@+id/codemaxximg"
+            android:layout_alignParentLeft="true"
+            android:layout_alignParentStart="true"
+            android:layout_alignParentRight="true"
+            android:layout_alignParentEnd="true" />
+        </RelativeLayout>
+    </ScrollView>
 
 </RelativeLayout>

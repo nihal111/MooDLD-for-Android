@@ -40,4 +40,5 @@ dependencies {
     }
     compile 'com.google.android.gms:play-services-appindexing:8.1.0'
     compile 'com.github.lzyzsd:circleprogress:1.1.0@aar'
+    compile 'de.hdodenhof:circleimageview:2.1.0'
 }

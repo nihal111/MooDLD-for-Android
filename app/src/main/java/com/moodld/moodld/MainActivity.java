@@ -289,7 +289,8 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(i);
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 5) {
-
+                            Intent intent = new Intent(MainActivity.this, AboutTeam.class);
+                            startActivity(intent);
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 6) {
                             logout();
