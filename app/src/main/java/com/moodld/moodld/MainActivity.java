@@ -281,6 +281,8 @@ public class MainActivity extends AppCompatActivity {
                             }
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 3) {
+                            Intent intent = new Intent(MainActivity.this, Intro.class);
+                            startActivity(intent);
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 4) {
                             String url = "https://github.com/nihal111/MooDLD-for-Android/issues/new";
@@ -642,7 +644,7 @@ public class MainActivity extends AppCompatActivity {
                 final String filename = params[1].substring(endIndex + 1);
                 Log.d(TAG, "Directory = " + dir);
                 Log.d(TAG, "File name = " + filename);
-                File directory = new File(rootDir, "MooDLD/" + dir);
+                File directory = new File(rootDir, dir);
                 if (!directory.exists()) {
                     directory.mkdirs();
                 }
