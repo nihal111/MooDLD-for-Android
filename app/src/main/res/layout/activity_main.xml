@@ -67,6 +67,16 @@
             android:id="@+id/filenametv"
             android:layout_gravity="left|bottom" />
 
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:text="DOWNLOAD"
+            android:textSize="20pt"
+            android:textStyle="bold"
+            android:gravity="center"
+            android:id="@+id/downloadtv"
+            android:layout_gravity="left|top" />
+
 
     </FrameLayout>
 

@@ -88,7 +88,7 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
     private ArcProgress arcProgress;
-    TextView filenametv;
+    TextView filenametv, downloadtv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -128,7 +128,8 @@ public class MainActivity extends AppCompatActivity {
 
         filenametv = (TextView) findViewById(R.id.filenametv);
         filenametv.setTextColor(Color.parseColor(contrast));
-
+        downloadtv = (TextView) findViewById(R.id.downloadtv);
+        downloadtv.setTextColor(Color.parseColor(contrast));
 
         SharedPreferences coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
 
@@ -138,6 +139,7 @@ public class MainActivity extends AppCompatActivity {
         } else {
             Log.d(TAG, "Session cookie not present");
             logout();
+            return;
         }
 
         /**
@@ -409,6 +411,7 @@ public class MainActivity extends AppCompatActivity {
      *
      */
     private void downloadFromCourses() {
+        downloadtv.setVisibility(View.INVISIBLE);
         arcProgress.setVisibility(View.VISIBLE);
         for (int i = 0; i < CourseList.size(); i++) {
             Course course = CourseList.get(i);
@@ -805,7 +808,9 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
-        notifManager.cancelAll();
+        if (notifManager!=null) {
+            notifManager.cancelAll();
+        }
     }
 
 }
