@@ -3,8 +3,8 @@
     <color name="colorPrimary">#3F51B5</color>
     <color name="colorPrimaryDark">#303F9F</color>
     <color name="colorAccent">#FFFFFF</color>
-    <color name="moodle">#E6A141</color>
-    <color name="moodleDark">#F28033</color>
+    <color name="moodle">#E71F56</color>
+    <color name="moodleDark">#040A04</color>
     <string-array name="colors">
         <item>#E71F56</item>
         <item>#36A7A9</item>

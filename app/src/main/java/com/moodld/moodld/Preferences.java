@@ -59,8 +59,6 @@ public class Preferences extends AppCompatActivity {
         setContentView(R.layout.activity_preferences);
 
         final SharedPreferences prefs = Preferences.this.getSharedPreferences("LoginDetails", MODE_PRIVATE);
-        final String color = prefs.getString("color", null);
-        final String contrast = prefs.getString("contrast", null);
 
         Button select_all = (Button) findViewById(R.id.select_all);
         Button deselect_all = (Button) findViewById(R.id.deselect_all);
@@ -68,11 +66,15 @@ public class Preferences extends AppCompatActivity {
         Button save = (Button) findViewById(R.id.save_button);
         RelativeLayout PreferencesBackground = (RelativeLayout) findViewById(R.id.PreferencesBackground);
 
+        /* Color changes disabled
+        final String color = prefs.getString("color", null);
+        final String contrast = prefs.getString("contrast", null);
         PreferencesBackground.setBackgroundColor(Color.parseColor(color));
         root_dir_button.setBackgroundColor(Color.parseColor(contrast));
         select_all.setBackgroundColor(Color.parseColor(contrast));
         deselect_all.setBackgroundColor(Color.parseColor(contrast));
         save.setBackgroundColor(Color.parseColor(contrast));
+        */
 
         root_dir_value = (TextView) findViewById(R.id.root_dir_value);
         coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
@@ -228,7 +230,7 @@ public class Preferences extends AppCompatActivity {
     }
 
     private class JsoupAsyncTask extends AsyncTask<String, String, Void> {
-
+        String mainPageUrl, sessionCookie;
         Elements links = new Elements();
         Document htmlDocument = new Document("filler data");
 
@@ -241,8 +243,10 @@ public class Preferences extends AppCompatActivity {
         protected Void doInBackground(String... params) {
             try {
                 int retries = 0;
+                mainPageUrl = params[0];
+                sessionCookie = params[1];
                 while (links.size() == 0 && retries < MAX_RETRIES) {
-                    htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[1]).get();
+                    htmlDocument = Jsoup.connect(mainPageUrl).cookie("MoodleSession", sessionCookie).get();
                     links = htmlDocument.select("a[href]");
                     Log.d(TAG, String.valueOf(links.size()));
                     retries += 1;
@@ -255,35 +259,41 @@ public class Preferences extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
-            Course course;
-            for (Element link : links) {
-                if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
-                    course = new Course(link.text(), link.attr("abs:href"), rootDir + "/MooDLD/" + link.text().substring(0, 6));
-                    Boolean flag = false;
-                    for (int i = 0; i < CourseList.size(); i++) {
-                        if (CourseList.get(i).getUrl().equals(course.getUrl())) {
-                            flag = true;
+            if (links != null) {
+                Course course;
+                for (Element link : links) {
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
+                        course = new Course(link.text(), link.attr("abs:href"), rootDir + "/MooDLD/" + link.text().substring(0, 6));
+                        Boolean flag = false;
+                        for (int i = 0; i < CourseList.size(); i++) {
+                            if (CourseList.get(i).getUrl().equals(course.getUrl())) {
+                                flag = true;
+                            }
+                        }
+                        if (flag == false) {
+                            JsoupAsyncTaskFetchNewsForumUrl nf = new JsoupAsyncTaskFetchNewsForumUrl();
+                            nf.execute(course, sessionCookie);
+                            pending++;
+                            Log.d(TAG, "Find nf url for " + pending + " " + course.getName());
                         }
                     }
-                    if (flag == false) {
-                        JsoupAsyncTaskFetchNewsForumUrl nf = new JsoupAsyncTaskFetchNewsForumUrl();
-                        nf.execute(course, sessionCookie);
-                        pending++;
-                        Log.d(TAG, "Find nf url for " + pending + " " + course.getName());
-                    }
                 }
-            }
 
-            if (pending == 0) {
-                onLoadComplete();
-            }
+                if (pending == 0) {
+                    onLoadComplete();
+                }
 
+            } else {
+                JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
+                jsoupAsyncTask.execute(mainPageUrl, sessionCookie);
+            }
         }
     }
 
     private class JsoupAsyncTaskFetchNewsForumUrl extends AsyncTask<Object, String, Void> {
 
         Course course;
+        String sessionCookie;
         Elements links = new Elements();
         Document htmlDocument = new Document("filler data");
 
@@ -296,9 +306,10 @@ public class Preferences extends AppCompatActivity {
         protected Void doInBackground(Object... params) {
             try {
                 course = (Course) params[0];
+                sessionCookie = (String) params[1];
                 int retries = 0;
                 while (links.size() == 0 && retries < MAX_RETRIES) {
-                    htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", (String) params[1]).get();
+                    htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", sessionCookie).get();
                     links = htmlDocument.select("a[href]");
                     Log.d(TAG, String.valueOf(links.size()));
                     retries += 1;
@@ -318,17 +329,22 @@ public class Preferences extends AppCompatActivity {
 
         @Override
         protected void onPostExecute(Void result) {
-            for (Element link : links) {
-                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/view.php?id=")) {
-                    Log.d("Inside course link: ", link.toString());
-                    course.setNewsForumUrl(link.attr("abs:href"));
-                    CourseList.add(course);
-                    break;
+            if (links != null) {
+                for (Element link : links) {
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/view.php?id=")) {
+                        Log.d("Inside course link: ", link.toString());
+                        course.setNewsForumUrl(link.attr("abs:href"));
+                        CourseList.add(course);
+                        break;
+                    }
                 }
-            }
-            pending--;
-            if (pending == 0) {
-                onLoadComplete();
+                pending--;
+                if (pending == 0) {
+                    onLoadComplete();
+                }
+            } else {
+                JsoupAsyncTaskFetchNewsForumUrl nf = new JsoupAsyncTaskFetchNewsForumUrl();
+                nf.execute(course, sessionCookie);
             }
         }
     }

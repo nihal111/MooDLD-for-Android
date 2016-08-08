@@ -70,12 +70,9 @@ public class Splash extends AppCompatActivity {
         String color = colors[seed];
         String contrast = contrastcolors[seed];
 
-        try {
+        if (li != null) {
             li.setBackgroundColor(Color.parseColor(color));
-        } catch (NullPointerException e) {
-            e.printStackTrace();
         }
-
 
         /* Check if first start to display AppIntro */
         SharedPreferences getPrefs = PreferenceManager
@@ -147,12 +144,9 @@ public class Splash extends AppCompatActivity {
                         sessionCookie = c.value();
                         cookies.add(c);
                         Log.d(TAG, "Cookies = " + sessionCookie);
-                    } catch (NullPointerException npe) {
+                    } catch (NullPointerException | IndexOutOfBoundsException npe) {
                         npe.printStackTrace();
                         //This will happen.
-                    } catch (IndexOutOfBoundsException e) {
-                        e.printStackTrace();
-                        //This will also happen.
                     }
                 }
 
@@ -197,7 +191,7 @@ public class Splash extends AppCompatActivity {
             SharedPreferences prefs = Splash.this.getSharedPreferences("LoginDetails", MODE_PRIVATE);
             SharedPreferences.Editor editor = prefs.edit();
             editor.putString("MoodleSession", sessionCookie);
-            editor.commit();
+            editor.apply();
             handlerneeded = false;
             Log.d(TAG, "Login Successful");
             Log.d(TAG, "Username = " + username);

@@ -110,28 +110,31 @@ public class MainActivity extends AppCompatActivity {
         email = prefs.getString("username", null);
         email = email + "@iitb.ac.in";
 
-        /* Setting Color and Contrast Color */
         dld = (FrameLayout) findViewById(R.id.dld);
+        filenametv = (TextView) findViewById(R.id.filenametv);
+        downloadtv = (TextView) findViewById(R.id.downloadtv);
+        toolbar = (Toolbar) findViewById(R.id.toolbar);
+
+        /* Color change disabled
         String color = prefs.getString("color", null);
         String contrast = prefs.getString("contrast", null);
         dld.setBackgroundColor(Color.parseColor(color));
+        arcProgress.setBackgroundColor(Color.parseColor(color));
+        arcProgress.setTextColor(Color.parseColor(contrast));
+        arcProgress.setUnfinishedStrokeColor(Color.parseColor(contrast));
 
-        toolbar = (Toolbar) findViewById(R.id.toolbar);
+        filenametv.setTextColor(Color.parseColor(contrast));
+        downloadtv.setTextColor(Color.parseColor(contrast));
+
         toolbar.setBackgroundColor(Color.parseColor(color));
+        */
 
         arcProgress = (ArcProgress) findViewById(R.id.arc_progress);
         if (arcProgress != null) {
             arcProgress.setVisibility(View.INVISIBLE);
             arcProgress.bringToFront();
         }
-        arcProgress.setBackgroundColor(Color.parseColor(color));
-        arcProgress.setTextColor(Color.parseColor(contrast));
-        arcProgress.setUnfinishedStrokeColor(Color.parseColor(contrast));
 
-        filenametv = (TextView) findViewById(R.id.filenametv);
-        filenametv.setTextColor(Color.parseColor(contrast));
-        downloadtv = (TextView) findViewById(R.id.downloadtv);
-        downloadtv.setTextColor(Color.parseColor(contrast));
 
         SharedPreferences coursePrefs = getSharedPreferences("CourseList", MODE_PRIVATE);
 

@@ -57,7 +57,13 @@ public class LoginActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_login);
 
+
         final SharedPreferences prefs = LoginActivity.this.getSharedPreferences("LoginDetails", MODE_PRIVATE);
+        Button login = (Button) findViewById(R.id.login);
+        final EditText ed1 = (EditText) findViewById(R.id.name);
+        final EditText ed2 = (EditText) findViewById(R.id.pass);
+
+        /*
         final String color = prefs.getString("color", null);
         final String contrast = prefs.getString("contrast", null);
         RelativeLayout li = (RelativeLayout) findViewById(R.id.LoginBackground);
@@ -66,41 +72,40 @@ public class LoginActivity extends AppCompatActivity {
             li.setBackgroundColor(Color.parseColor(color));
         }
 
-        Button login = (Button) findViewById(R.id.login);
-
         if (login != null) {
             login.setBackgroundColor(Color.parseColor(contrast));
         }
 
-        final EditText ed1 = (EditText) findViewById(R.id.name);
-        final EditText ed2 = (EditText) findViewById(R.id.pass);
 
         if (ed1 != null && ed2 != null && login != null) {
             ed1.getBackground().setColorFilter(Color.parseColor(contrast), PorterDuff.Mode.SRC_ATOP);
 
         ed2.getBackground().setColorFilter(Color.parseColor(contrast), PorterDuff.Mode.SRC_ATOP);
+        }
+        */
 
-        login.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
+        if (login != null) {
+            login.setOnClickListener(new View.OnClickListener() {
+                @Override
+                public void onClick(View v) {
 
 
-                try {
-                    String username = URLEncoder.encode(ed1.getText().toString(), "UTF-8");
-                    String password = URLEncoder.encode(ed2.getText().toString(), "UTF-8");
-                    Log.d("Login", "Username: " + username + " Password: " + password);
+                    try {
+                        String username = URLEncoder.encode(ed1.getText().toString(), "UTF-8");
+                        String password = URLEncoder.encode(ed2.getText().toString(), "UTF-8");
+                        Log.d("Login", "Username: " + username + " Password: " + password);
 
-                    String[] login_details = {username, password};
-                    LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
-                    loginAsyncTask.execute(login_details);
+                        String[] login_details = {username, password};
+                        LoginAsyncTask loginAsyncTask = new LoginAsyncTask();
+                        loginAsyncTask.execute(login_details);
 
-                } catch (UnsupportedEncodingException e) {
-                    Log.e(TAG, "UnsupportedEncodingException");
-                } catch (NullPointerException npe) {
-                    npe.printStackTrace();
+                    } catch (UnsupportedEncodingException e) {
+                        Log.e(TAG, "UnsupportedEncodingException");
+                    } catch (NullPointerException npe) {
+                        npe.printStackTrace();
+                    }
                 }
-            }
-        });
+            });
         }
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -209,9 +214,9 @@ public class LoginActivity extends AppCompatActivity {
                 Response response = client.newCall(request).execute();
                 if (!response.isSuccessful()) {
                     Log.d(TAG, String.valueOf(response.code()));
+                    Log.d(TAG, response.body().string());
                 } else {
                     Log.d(TAG, String.valueOf(response.code()));
-                    Log.d(TAG, response.body().string());
                     Log.d(TAG, response.toString());
                 }
             } catch (IOException ioe) {
@@ -271,12 +276,21 @@ public class LoginActivity extends AppCompatActivity {
 
             if (request.url().toString().equals(loginPageUrl)) {
                 if (response.header("Location", null) == null) {
-                    Log.d(TAG, "Login details INCORRECT.");
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            Toast.makeText(getApplicationContext(), "Invalid Username or Password!", Toast.LENGTH_LONG).show();
-                        }
-                    });
+                    if (response.body().string().contains("Log in to the site")) {
+                        Log.d(TAG, "Login details INCORRECT.");
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "Invalid Username or Password!", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    } else {
+                        Log.d(TAG, "Cannot access Moodle.");
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(), "Cannot access Moodle. Check if you are on insti network!", Toast.LENGTH_LONG).show();
+                            }
+                        });
+                    }
                     details_correct = false;
                 } else if (response.header("Location", null).startsWith(loginPageUrl + "?testsession")) {
                     Log.d(TAG, "Login details CORRECT");

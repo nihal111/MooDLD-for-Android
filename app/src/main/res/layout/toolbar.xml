@@ -7,5 +7,5 @@
     android:fitsSystemWindows="false"
     android:minHeight="?attr/actionBarSize"
     app:theme="@style/ThemeOverlay.AppCompat.Dark.ActionBar"
-    android:background="?attr/colorPrimaryDark">
+    android:background="@color/moodle">
 </android.support.v7.widget.Toolbar>
