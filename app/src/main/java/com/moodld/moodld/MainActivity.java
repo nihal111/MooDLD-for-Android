@@ -56,6 +56,8 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -84,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
     private Toolbar toolbar;
     private Drawer result;
     private FrameLayout dld;
-    private String sessionCookie = null, email = null, rootDir = null;
+    private String sessionCookie = null, email = null, rootDir = null, dashboardState="ready";
     private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
     private ArcProgress arcProgress;
@@ -201,8 +203,10 @@ public class MainActivity extends AppCompatActivity {
                 } else {
                     downloadFromCourses();
                     dld.setEnabled(false);
+                    filenametv.setText("Fetching courses...");
                     log.setText("");
                     log.append("Fetching courses from preferences.\n\n");
+                    dashboardState="active";
                 }
             }
         });
@@ -417,8 +421,12 @@ public class MainActivity extends AppCompatActivity {
             Course course = CourseList.get(i);
             if (course.isChecked()) {
                 Log.d(TAG, course.getName() + ": " + course.getUrl());
+
+                // Initiate download with course object and session cookie
                 JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
                 jsoupAsyncTask.execute(course, sessionCookie);
+
+                // Initiate News Forum download with course object and session cookie
                 JsoupAsyncTaskFetchNf jsoupAsyncTaskFetchNf = new JsoupAsyncTaskFetchNf();
                 jsoupAsyncTaskFetchNf.execute(course, sessionCookie);
                 Log.d(TAG, course.getName());
@@ -428,13 +436,50 @@ public class MainActivity extends AppCompatActivity {
 
     void scrollToBottom() {
         final ScrollView scrollView = (ScrollView) findViewById(R.id.scrollView);
-        scrollView.post(new Runnable() {
-            @Override
-            public void run() {
-                scrollView.fullScroll(View.FOCUS_DOWN);
-            }
-        });
+        if (scrollView != null) {
+            scrollView.post(new Runnable() {
+                @Override
+                public void run() {
+                    scrollView.fullScroll(View.FOCUS_DOWN);
+                }
+            });
+        }
     }
+
+    public boolean isInternetAvailable() {
+        try {
+            InetAddress ipAddr = InetAddress.getByName("moodle.iitb.ac.in");
+            Log.d(TAG, "Internet check! Moodle ip= " + ipAddr.toString());
+            return !ipAddr.equals("");
+
+        } catch (Exception e) {
+            Log.d(TAG, "No internet available");
+            DashboardConnectionProblems();
+            return false;
+        }
+
+    }
+
+    private void DashboardConnectionProblems() {
+        if (!dashboardState.equals("connectionProblems")) {
+            runOnUiThread(new Runnable() {
+                @Override
+                public void run() {
+                    downloadtv.setVisibility(View.VISIBLE);
+                    arcProgress.setVisibility(View.INVISIBLE);
+                    filenametv.setText("Connection problems occured!");
+                    downloadtv.setText("TRY AGAIN!");
+                    dld.setEnabled(true);
+                    Toast.makeText(getApplicationContext(), "Please check your internet connection and try again", Toast.LENGTH_LONG).show();
+                    log.append("Connection problems were encountered. All files may not have been downloaded. Please check your connection and try again.");
+                    scrollToBottom();
+                }
+            });
+            dashboardState = "connectionProblems";
+        }
+    }
+
+
 
     /*
     * Downloads from main thread and folders inside
@@ -445,6 +490,7 @@ public class MainActivity extends AppCompatActivity {
         Elements links;
         Document htmlDocument;
         ArrayList<Element> linksToDownload;
+        String sessionCookie;
 
         @Override
         protected void onPreExecute() {
@@ -454,41 +500,53 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Object... params) {
-            try {
-                course = (Course) params[0];
-                htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", (String) params[1]).get();
-                links = htmlDocument.select("a[href]");
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (isInternetAvailable()) {
+                try {
+                    course = (Course) params[0];
+                    sessionCookie = (String) params[1];
+                    htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", sessionCookie).get();
+                    links = htmlDocument.select("a[href]");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                this.cancel(true);
             }
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            log.append("Downloading " + course.getName() + " files.\n\n");
-            scrollToBottom();
-            //Iterate over links and call DownloadFileFromUrl
-            for (Element link : links) {
-//                if (!link.attr("abs:href").startsWith(mainPageUrl + "logout.php") && !link.attr("abs:href").startsWith(mainPageUrl + "mod/forum") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "badges") && !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "calendar")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "grade")&& !link.attr("abs:href").startsWith(mainPageUrl + "my") && !link.attr("abs:href").startsWith(mainPageUrl + "user") && !link.attr("abs:href").startsWith(mainPageUrl + "message")) {
-                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/resource")) {
-                    linksToDownload.add(link);
-                }
+            if (links != null) {
+                log.append("Downloading " + course.getName() + " files.\n\n");
+                scrollToBottom();
+                //Iterate over links and call DownloadFileFromUrl
+                for (Element link : links) {
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "mod/resource")) {
+                        linksToDownload.add(link);
+                    }
 
-                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/folder")) {
-                    Log.d("Folder", link.toString());
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "mod/folder")) {
+                        Log.d("Folder", link.toString());
+                    }
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "mod/assign")) {
+                        Log.d("Assignment", link.toString());
+                    }
                 }
-                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/assign")) {
-                    Log.d("Assignment", link.toString());
-                }
-            }
-            downloadsRemaining += linksToDownload.size();
-            for (Element link : linksToDownload) {
-                DownloadFileFromURL download = new DownloadFileFromURL();
-                download.execute(link.attr("abs:href"), course.getName().substring(0, 6) + "/" + link.text());
+                downloadsRemaining += linksToDownload.size();
+                if (linksToDownload != null) {
+                    for (Element link : linksToDownload) {
+                        DownloadFileFromURL download = new DownloadFileFromURL();
+                        download.execute(link.attr("abs:href"), course.getName().substring(0, 6) + "/" + link.text());
 //                    downloadLinks.add(course.getUrl());
 //                    fileNames.add(course.getPath() + link.text());
-                Log.d(TAG, link.text() + ": " + link.attr("abs:href"));
+                        Log.d(TAG, link.text() + ": " + link.attr("abs:href"));
+                    }
+                }
+            } else {
+                Log.wtf(TAG, "JsoupAsyncTask links null");
+                JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
+                jsoupAsyncTask.execute(course, sessionCookie);
             }
         }
     }
@@ -498,6 +556,7 @@ public class MainActivity extends AppCompatActivity {
         Course course;
         Elements links;
         Document htmlDocument;
+        String sessionCookie;
 
         @Override
         protected void onPreExecute() {
@@ -506,35 +565,46 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(Object... params) {
-            try {
-                course = (Course) params[0];
-                htmlDocument = Jsoup.connect(course.getNewsforumurl()).cookie("MoodleSession", (String) params[1]).get();
-                links = htmlDocument.select("a[href]");
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (isInternetAvailable()) {
+                try {
+                    course = (Course) params[0];
+                    sessionCookie = (String) params[1];
+                    htmlDocument = Jsoup.connect(course.getNewsforumurl()).cookie("MoodleSession", sessionCookie).get();
+                    links = htmlDocument.select("a[href]");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                this.cancel(true);
             }
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            log.append("Downloading " + course.getName() + " News Forum files.\n\n");
-            scrollToBottom();
+            if (links != null) {
+                log.append("Downloading " + course.getName() + " News Forum files.\n\n");
+                scrollToBottom();
 
-            for (Element link : links) {
+                for (Element link : links) {
 
-                String url = link.attr("abs:href");
-                if (link.attr("abs:href").indexOf("&parent=") > -1) {
-                    url = link.attr("abs:href").substring(0, link.attr("abs:href").indexOf("&parent="));
+                    String url = link.attr("abs:href");
+                    if (link.attr("abs:href").contains("&parent=")) {
+                        url = link.attr("abs:href").substring(0, link.attr("abs:href").indexOf("&parent="));
+                    }
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/discuss.php") && !nfthreads.contains(url)) {
+                        Log.d("Nf Links: ", url);
+                        nfthreads.add(url);
+                        JsoupAsyncTaskFetchNfThread jsoupAsyncTaskFetchNfThread = new JsoupAsyncTaskFetchNfThread();
+                        jsoupAsyncTaskFetchNfThread.execute(link.attr("abs:href"), course.getName(), sessionCookie);
+                    }
                 }
-                if (link.attr("abs:href").startsWith(mainPageUrl + "mod/forum/discuss.php") && !nfthreads.contains(url)) {
-                    Log.d("Nf Links: ", url);
-                    nfthreads.add(url);
-                    JsoupAsyncTaskFetchNfThread jsoupAsyncTaskFetchNfThread = new JsoupAsyncTaskFetchNfThread();
-                    jsoupAsyncTaskFetchNfThread.execute(link.attr("abs:href"), course.getName(), sessionCookie);
-                }
+                nfDownloaded = true;
+            } else {
+                Log.wtf(TAG, "JsoupAsyncTaskFetchNf links null");
+                JsoupAsyncTaskFetchNf jsoupAsyncTaskFetchNf = new JsoupAsyncTaskFetchNf();
+                jsoupAsyncTaskFetchNf.execute(course, sessionCookie);
             }
-            nfDownloaded = true;
         }
     }
 
@@ -543,6 +613,8 @@ public class MainActivity extends AppCompatActivity {
         Elements links;
         Document htmlDocument;
         String courseName;
+        String sessionCookie;
+        String URL;
 
         @Override
         protected void onPreExecute() {
@@ -551,45 +623,57 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(String... params) {
-            try {
-                htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[2]).get();
-                links = htmlDocument.select("a[href]");
-                courseName = params[1];
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (isInternetAvailable()) {
+                try {
+                    URL = params[0];
+                    courseName = params[1];
+                    sessionCookie = params[2];
+                    htmlDocument = Jsoup.connect(URL).cookie("MoodleSession", sessionCookie).get();
+                    links = htmlDocument.select("a[href]");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }else {
+                this.cancel(true);
             }
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            /**
-             * Removing duplicates from links obtained on news forum page.
-             */
-            boolean found = false;
-            ArrayList<Element> linksToDownload = new ArrayList<>();
-            for (Element link : links) {
-                if (found) {
-                    found = false;
-                    continue;
+            if (links != null) {
+                /**
+                 * Removing duplicates from links obtained on news forum page.
+                 */
+                boolean found = false;
+                ArrayList<Element> linksToDownload = new ArrayList<>();
+                for (Element link : links) {
+                    if (found) {
+                        found = false;
+                        continue;
+                    }
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
+                        linksToDownload.add(link);
+                        found = true;
+                    }
                 }
-                if (link.attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
-                    linksToDownload.add(link);
-                    found = true;
-                }
-            }
 
-            downloadsRemaining += linksToDownload.size();
-            for (Element link : linksToDownload) {
-                Log.d("Nf thread downloadable", link.attr("abs:href"));
-                DownloadFileFromURL download = new DownloadFileFromURL();
-                try {
-                    download.execute(link.attr("abs:href"), courseName.substring(0, 6) + "/NewsForum/" +
-                            java.net.URLDecoder.decode(link.attr("abs:href"), "UTF-8").substring(
-                                    java.net.URLDecoder.decode(link.attr("abs:href"), "UTF-8").lastIndexOf("/") + 1));
-                } catch (UnsupportedEncodingException e) {
-                    e.printStackTrace();
+                downloadsRemaining += linksToDownload.size();
+                for (Element link : linksToDownload) {
+                    Log.d("Nf thread downloadable", link.attr("abs:href"));
+                    DownloadFileFromURL download = new DownloadFileFromURL();
+                    try {
+                        download.execute(link.attr("abs:href"), courseName.substring(0, 6) + "/NewsForum/" +
+                                java.net.URLDecoder.decode(link.attr("abs:href"), "UTF-8").substring(
+                                        java.net.URLDecoder.decode(link.attr("abs:href"), "UTF-8").lastIndexOf("/") + 1));
+                    } catch (UnsupportedEncodingException e) {
+                        e.printStackTrace();
+                    }
                 }
+            } else {
+                Log.wtf(TAG, "JsoupAsyncTaskFetchNfThread links null");
+                JsoupAsyncTaskFetchNfThread jsoupAsyncTaskFetchNfThread = new JsoupAsyncTaskFetchNfThread();
+                jsoupAsyncTaskFetchNfThread.execute(URL, courseName, sessionCookie);
             }
         }
     }
@@ -727,15 +811,7 @@ public class MainActivity extends AppCompatActivity {
 
             if (nfDownloaded && downloadsRemaining == 0) {
                 Log.d(TAG, "All downloads complete.");
-                dld.setEnabled(true);
-                filenametv.setText("All downloads complete!");
-                log.append("All downloads complete.\n");
-                scrollToBottom();
-
-                notifBuilder.setContentText("All downloads complete")
-                        .setProgress(0, 0, false)
-                        .setOngoing(false);
-                notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
+                DashboardDownloadsComplete();
             }
             Log.d(TAG, "Downloads remaining = " + downloadsRemaining);
             arcProgress.setProgress(100);
@@ -744,10 +820,28 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    private void DashboardDownloadsComplete() {
+        if (!dashboardState.equals("connectionProblems")) {
+            dld.setEnabled(true);
+            filenametv.setText("All downloads complete!");
+            log.append("All downloads complete.\n\n");
+            scrollToBottom();
+            arcProgress.setVisibility(View.INVISIBLE);
+            downloadtv.setVisibility(View.VISIBLE);
+            downloadtv.setText("DOWNLOAD AGAIN");
+            dashboardState = "complete";
+        }
+        notifBuilder.setContentText("All downloads complete")
+                .setProgress(0, 0, false)
+                .setOngoing(false);
+        notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
+    }
+
     private class JsoupNameAsyncTask extends AsyncTask<String, String, Void> {
 
         Elements links;
         Document htmlDocument;
+        String URL, sessionCookie;
 
         @Override
         protected void onPreExecute() {
@@ -756,31 +850,47 @@ public class MainActivity extends AppCompatActivity {
 
         @Override
         protected Void doInBackground(String... params) {
-            try {
-                htmlDocument = Jsoup.connect(params[0]).cookie("MoodleSession", params[1]).get();
-                links = htmlDocument.select("a[href]");
-            } catch (IOException e) {
-                e.printStackTrace();
+            if (isInternetAvailable()) {
+                try {
+                    URL = params[0];
+                    sessionCookie = params[1];
+                    htmlDocument = Jsoup.connect(URL).cookie("MoodleSession", sessionCookie).get();
+                    links = htmlDocument.select("a[href]");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            } else {
+                this.cancel(true);
             }
             return null;
         }
 
         @Override
         protected void onPostExecute(Void result) {
-            dialog.dismiss();
-            for (Element link : links) {
-                if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
-                    downloadLinks.add(link.attr("abs:href"));
-                    courseNames.add(link.text().substring(0, 6));
-                } else if (link.attr("abs:href").startsWith(mainPageUrl + "user/profile.php") && !link.text().equals("My profile") && !link.text().equals("View profile")) {
-                    String myname = link.text();
-                    Log.d(TAG, myname);
-                    final IProfile profile = new ProfileDrawerItem().withName(myname).withEmail(email).withIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.user, null));
-                    headerResult.addProfiles(profile);
+            if (links != null) {
+                try {
+                    dialog.dismiss();
+                } catch (Exception e) {
+                    e.printStackTrace();
                 }
+                for (Element link : links) {
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
+                        downloadLinks.add(link.attr("abs:href"));
+                        courseNames.add(link.text().substring(0, 6));
+                    } else if (link.attr("abs:href").startsWith(mainPageUrl + "user/profile.php") && !link.text().equals("My profile") && !link.text().equals("View profile")) {
+                        String myname = link.text();
+                        Log.d(TAG, myname);
+                        final IProfile profile = new ProfileDrawerItem().withName(myname).withEmail(email).withIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.user, null));
+                        headerResult.addProfiles(profile);
+                    }
+                }
+                Log.d(TAG, downloadLinks.toString());
+                Log.d(TAG, courseNames.toString());
+            } else {
+                Log.wtf(TAG, "JsoupNameAsyncTask links null");
+                JsoupNameAsyncTask jsoupNameAsyncTask = new JsoupNameAsyncTask();
+                jsoupNameAsyncTask.execute(URL, sessionCookie);
             }
-            Log.d(TAG, downloadLinks.toString());
-            Log.d(TAG, courseNames.toString());
         }
     }
 

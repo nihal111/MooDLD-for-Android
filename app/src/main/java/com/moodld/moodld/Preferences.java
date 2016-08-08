@@ -40,16 +40,16 @@ import java.util.List;
 public class Preferences extends AppCompatActivity {
 
     private static final String TAG = "Preferences";
-    private final int REQUEST_DIRECTORY = 0, MAX_RETRIES = 5;
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
-    private ListView listView;
-    private ArrayAdapter<Course> listAdapter;
-    private TextView root_dir_value;
+    private final int REQUEST_DIRECTORY = 0, MAX_RETRIES = 5;
     ArrayList<Course> CourseList = new ArrayList<Course>();
     SharedPreferences coursePrefs;
     String rootDir, sessionCookie;
     Integer pending = 0;
     ProgressDialog dialog;
+    private ListView listView;
+    private ArrayAdapter<Course> listAdapter;
+    private TextView root_dir_value;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -80,7 +80,7 @@ public class Preferences extends AppCompatActivity {
         listView = (ListView) findViewById(R.id.listView);
 
         Bundle extras = getIntent().getExtras();
-        if(extras != null) {
+        if (extras != null) {
             if (extras.getInt("status") == 0) {
                 Toast.makeText(getApplicationContext(), "Please set your Preferences first!", Toast.LENGTH_LONG).show();
             }
@@ -207,6 +207,26 @@ public class Preferences extends AppCompatActivity {
         }
     }
 
+    private void onLoadComplete() {
+        Log.d(TAG, "CourseList after merging fetched and saved data: " + CourseList.toString());
+        runOnUiThread(new Runnable() {
+            @Override
+            public void run() {
+                dialog.dismiss();
+                listAdapter = new CourseArrayAdapter(Preferences.this, CourseList);
+                listView.setAdapter(listAdapter);
+            }
+        });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if (dialog != null && dialog.isShowing()) {
+            dialog.dismiss();
+        }
+        super.onDestroy();
+    }
+
     private class JsoupAsyncTask extends AsyncTask<String, String, Void> {
 
         Elements links = new Elements();
@@ -259,18 +279,6 @@ public class Preferences extends AppCompatActivity {
             }
 
         }
-    }
-
-    private void onLoadComplete() {
-        Log.d(TAG, "CourseList after merging fetched and saved data: " + CourseList.toString());
-        runOnUiThread(new Runnable() {
-            @Override
-            public void run() {
-                dialog.dismiss();
-                listAdapter = new CourseArrayAdapter(Preferences.this, CourseList);
-                listView.setAdapter(listAdapter);
-            }
-        });
     }
 
     private class JsoupAsyncTaskFetchNewsForumUrl extends AsyncTask<Object, String, Void> {

@@ -75,7 +75,9 @@ public class LoginActivity extends AppCompatActivity {
         final EditText ed1 = (EditText) findViewById(R.id.name);
         final EditText ed2 = (EditText) findViewById(R.id.pass);
 
-        ed1.getBackground().setColorFilter(Color.parseColor(contrast), PorterDuff.Mode.SRC_ATOP);
+        if (ed1 != null && ed2 != null && login != null) {
+            ed1.getBackground().setColorFilter(Color.parseColor(contrast), PorterDuff.Mode.SRC_ATOP);
+
         ed2.getBackground().setColorFilter(Color.parseColor(contrast), PorterDuff.Mode.SRC_ATOP);
 
         login.setOnClickListener(new View.OnClickListener() {
@@ -99,6 +101,7 @@ public class LoginActivity extends AppCompatActivity {
                 }
             }
         });
+        }
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -213,6 +216,13 @@ public class LoginActivity extends AppCompatActivity {
                 }
             } catch (IOException ioe) {
                 ioe.printStackTrace();
+                Log.wtf(TAG, "Login request failed. Internet problems (?)");
+                runOnUiThread(new Runnable() {
+                    @Override
+                    public void run() {
+                        Toast.makeText(getApplicationContext(), "Please check your internet connection and try again", Toast.LENGTH_LONG).show();
+                    }
+                });
             }
             return null;
         }
@@ -226,6 +236,9 @@ public class LoginActivity extends AppCompatActivity {
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
+            }
+            else {
+                dialog.dismiss();
             }
         }
     }
