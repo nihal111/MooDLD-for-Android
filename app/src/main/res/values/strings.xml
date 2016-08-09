@@ -6,7 +6,7 @@
     <string name="nav_item_directory">Open Download Directory</string>
     <string name="nav_item_about">About Team</string>
     <string name="nav_item_help">Quick Help</string>
-    <string name="nav_item_feedback">Feedback</string>
+    <string name="nav_item_feedback">Report Issue</string>
     <string name="nav_item_logout">Logout</string>
     <string name="title_dashboard">MooDLD</string>
 

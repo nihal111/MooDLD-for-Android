@@ -88,6 +88,7 @@ public class MainActivity extends AppCompatActivity {
     private FrameLayout dld;
     private String sessionCookie = null, email = null, rootDir = null, dashboardState="ready";
     private ArrayList<String> downloadLinks = new ArrayList<String>();
+    private ArrayList<String> folderLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
     private ArcProgress arcProgress;
     TextView filenametv, downloadtv;
@@ -226,7 +227,7 @@ public class MainActivity extends AppCompatActivity {
                 if (result.isDrawerOpen()) {
                     result.closeDrawer();
                 } else {
-                    finish();
+                    moveTaskToBack(true);
                 }
                 return true;
         }
@@ -241,7 +242,7 @@ public class MainActivity extends AppCompatActivity {
         PrimaryDrawerItem preferences = new PrimaryDrawerItem().withName(R.string.nav_item_preference).withIdentifier(1).withSelectable(false).withIcon(FontAwesome.Icon.faw_wrench);
         PrimaryDrawerItem directory = new PrimaryDrawerItem().withName(R.string.nav_item_directory).withIdentifier(2).withSelectable(false).withIcon(FontAwesome.Icon.faw_download);
         PrimaryDrawerItem help = new PrimaryDrawerItem().withName(R.string.nav_item_help).withIdentifier(3).withSelectable(false).withIcon(FontAwesome.Icon.faw_question);
-        PrimaryDrawerItem feedback = new PrimaryDrawerItem().withName(R.string.nav_item_feedback).withIdentifier(4).withSelectable(false).withIcon(FontAwesome.Icon.faw_comment);
+        PrimaryDrawerItem report_issue = new PrimaryDrawerItem().withName(R.string.nav_item_feedback).withIdentifier(4).withSelectable(false).withIcon(FontAwesome.Icon.faw_comment);
         PrimaryDrawerItem about = new PrimaryDrawerItem().withName(R.string.nav_item_about).withIdentifier(5).withSelectable(false).withIcon(FontAwesome.Icon.faw_info);
         final PrimaryDrawerItem logout = new PrimaryDrawerItem().withName(R.string.nav_item_logout).withIdentifier(6).withSelectable(false).withIcon(FontAwesome.Icon.faw_sign_out);
 
@@ -269,7 +270,7 @@ public class MainActivity extends AppCompatActivity {
                 .withActivity(this)
                 .withToolbar(toolbar)
                 .addDrawerItems(
-                        preferences, directory, new DividerDrawerItem(), help, feedback, about, new DividerDrawerItem(), logout
+                        preferences, directory, new DividerDrawerItem(), help, report_issue, about, new DividerDrawerItem(), logout
                 )
                 .withOnDrawerItemClickListener(new Drawer.OnDrawerItemClickListener() {
                     @Override
@@ -427,7 +428,7 @@ public class MainActivity extends AppCompatActivity {
 
                 // Initiate download with course object and session cookie
                 JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
-                jsoupAsyncTask.execute(course, sessionCookie);
+                jsoupAsyncTask.execute(course, sessionCookie, "", "");
 
                 // Initiate News Forum download with course object and session cookie
                 JsoupAsyncTaskFetchNf jsoupAsyncTaskFetchNf = new JsoupAsyncTaskFetchNf();
@@ -493,7 +494,7 @@ public class MainActivity extends AppCompatActivity {
         Elements links;
         Document htmlDocument;
         ArrayList<Element> linksToDownload;
-        String sessionCookie;
+        String sessionCookie, folderName, URL;
 
         @Override
         protected void onPreExecute() {
@@ -507,7 +508,9 @@ public class MainActivity extends AppCompatActivity {
                 try {
                     course = (Course) params[0];
                     sessionCookie = (String) params[1];
-                    htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", sessionCookie).get();
+                    folderName = (String) params[2];
+                    URL = (folderName.equals(""))? course.getUrl() : (String) params[3];
+                    htmlDocument = Jsoup.connect(URL).cookie("MoodleSession", sessionCookie).get();
                     links = htmlDocument.select("a[href]");
                 } catch (IOException e) {
                     e.printStackTrace();
@@ -521,7 +524,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onPostExecute(Void result) {
             if (links != null) {
-                log.append("Downloading " + course.getName() + " files.\n\n");
+                log.append("Downloading " + course.getName() + ((folderName.equals("")) ? "" : " " + folderName) + " files.\n\n");
                 scrollToBottom();
                 //Iterate over links and call DownloadFileFromUrl
                 for (Element link : links) {
@@ -529,9 +532,21 @@ public class MainActivity extends AppCompatActivity {
                         linksToDownload.add(link);
                     }
 
-                    if (link.attr("abs:href").startsWith(mainPageUrl + "mod/folder")) {
-                        Log.d("Folder", link.toString());
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "pluginfile.php")) {
+                        if (!linksToDownload.contains(link)) {
+                            linksToDownload.add(link);
+                        }
                     }
+
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "mod/folder") && !link.attr("abs:href").contains("#")) {
+                        if (!folderLinks.contains(link.attr("abs:href")) && !folderLinks.contains(link.attr("abs:href")+"#")) {
+                            Log.d("Folder", link.toString());
+                            JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
+                            jsoupAsyncTask.execute(course, sessionCookie, link.text(), link.attr("abs:href"));
+                            folderLinks.add(link.attr("abs:href"));
+                        }
+                    }
+
                     if (link.attr("abs:href").startsWith(mainPageUrl + "mod/assign")) {
                         Log.d("Assignment", link.toString());
                     }
@@ -540,7 +555,7 @@ public class MainActivity extends AppCompatActivity {
                 if (linksToDownload != null) {
                     for (Element link : linksToDownload) {
                         DownloadFileFromURL download = new DownloadFileFromURL();
-                        download.execute(link.attr("abs:href"), course.getName().substring(0, 6) + "/" + link.text());
+                        download.execute(link.attr("abs:href"), course.getName().substring(0, 6) + "/" + ((folderName.equals("")) ? "" : folderName+"/") + link.text());
 //                    downloadLinks.add(course.getUrl());
 //                    fileNames.add(course.getPath() + link.text());
                         Log.d(TAG, link.text() + ": " + link.attr("abs:href"));
@@ -549,7 +564,7 @@ public class MainActivity extends AppCompatActivity {
             } else {
                 Log.wtf(TAG, "JsoupAsyncTask links null");
                 JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
-                jsoupAsyncTask.execute(course, sessionCookie);
+                jsoupAsyncTask.execute(course, sessionCookie, folderName, URL);
             }
         }
     }
@@ -925,7 +940,4 @@ public class MainActivity extends AppCompatActivity {
             notifManager.cancelAll();
         }
     }
-
 }
-
-

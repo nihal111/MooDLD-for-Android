@@ -5,6 +5,7 @@
     <color name="colorAccent">#FFFFFF</color>
     <color name="moodle">#E71F56</color>
     <color name="moodleDark">#040A04</color>
+    <color name="moodleDarkRed">#AA1122</color>
     <string-array name="colors">
         <item>#E71F56</item>
         <item>#36A7A9</item>
