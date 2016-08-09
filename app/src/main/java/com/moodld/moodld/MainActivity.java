@@ -1,12 +1,12 @@
 package com.moodld.moodld;
 
+import android.app.AlertDialog;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -29,7 +29,6 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.lzyzsd.circleprogress.ArcProgress;
-import com.google.android.gms.auth.firstparty.shared.FACLConfig;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 import com.mikepenz.fontawesome_typeface_library.FontAwesome;
@@ -57,10 +56,10 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
-import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 
+import dmax.dialog.SpotsDialog;
 import okhttp3.Interceptor;
 import okhttp3.OkHttpClient;
 import okhttp3.Request;
@@ -73,34 +72,32 @@ public class MainActivity extends AppCompatActivity {
     private final int WRITE_EXTERNAL_STORAGE = 1;
     private final int REQUEST_DIRECTORY = 0, NOTIFICATION_ID = 1;
     public AccountHeader headerResult;
-    ProgressDialog dialog;
+    AlertDialog dialog;
     ArrayList<Course> CourseList = new ArrayList<Course>();
     ArrayList<String> nfthreads = new ArrayList<String>();
     ArrayList<String> fileNames = new ArrayList<String>();
     SharedPreferences coursePrefs;
-    int downloadsRemaining = 0;
+    int downloadsRemaining = 0, asyncCount = 0, coursesToDownload = 0, coursesDownloaded = 0;
     TextView log;
     NotificationManager notifManager;
     NotificationCompat.Builder notifBuilder;
-    boolean nfDownloaded = false;
+    boolean nfDownloaded = true;
+    TextView filenametv, downloadtv;
     private Toolbar toolbar;
     private Drawer result;
     private FrameLayout dld;
-    private String sessionCookie = null, email = null, rootDir = null, dashboardState="ready";
+    private String sessionCookie = null, email = null, rootDir = null, dashboardState = "ready", lastDownloaded = "";
     private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> folderLinks = new ArrayList<String>();
     private ArrayList<String> courseNames = new ArrayList<String>();
     private ArcProgress arcProgress;
-    TextView filenametv, downloadtv;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        dialog = new ProgressDialog(this);
-        dialog.setTitle("Please wait");
-        dialog.setMessage("Loading data...");
+        dialog = new SpotsDialog(this, "Loading data...");
         dialog.setCancelable(false);
         dialog.show();
 
@@ -210,7 +207,8 @@ public class MainActivity extends AppCompatActivity {
                     filenametv.setText("Fetching courses...");
                     log.setText("");
                     log.append("Fetching courses from preferences.\n\n");
-                    dashboardState="active";
+                    scrollToBottom();
+                    dashboardState = "active";
                 }
             }
         });
@@ -280,6 +278,10 @@ public class MainActivity extends AppCompatActivity {
                             startActivity(intent);
                         }
                         if (drawerItem != null && drawerItem.getIdentifier() == 2) {
+                            File directory = new File(rootDir);
+                            if (!directory.exists()) {
+                                directory.mkdirs();
+                            }
                             try {
                                 Log.d(TAG, "Opening " + rootDir);
                                 Uri selectedUri = Uri.parse(rootDir);
@@ -429,10 +431,12 @@ public class MainActivity extends AppCompatActivity {
                 // Initiate download with course object and session cookie
                 JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
                 jsoupAsyncTask.execute(course, sessionCookie, "", "");
-
+                asyncCount++;
                 // Initiate News Forum download with course object and session cookie
                 JsoupAsyncTaskFetchNf jsoupAsyncTaskFetchNf = new JsoupAsyncTaskFetchNf();
                 jsoupAsyncTaskFetchNf.execute(course, sessionCookie);
+                asyncCount++;
+                coursesToDownload++;
                 Log.d(TAG, course.getName());
             }
         }
@@ -483,7 +487,30 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
+    private void DashboardDownloadsComplete() {
+        if (!dashboardState.equals("connectionProblems")) {
+            dld.setEnabled(true);
+            filenametv.setText("All downloads complete!");
+            log.append("All downloads complete.\n\n");
+            scrollToBottom();
+            arcProgress.setVisibility(View.INVISIBLE);
+            downloadtv.setVisibility(View.VISIBLE);
+            downloadtv.setText("DOWNLOAD AGAIN");
+            dashboardState = "complete";
+        }
+        notifBuilder.setContentText("All downloads complete")
+                .setProgress(0, 0, false)
+                .setOngoing(false);
+        notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
+    }
 
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        if (notifManager != null) {
+            notifManager.cancelAll();
+        }
+    }
 
     /*
     * Downloads from main thread and folders inside
@@ -509,7 +536,7 @@ public class MainActivity extends AppCompatActivity {
                     course = (Course) params[0];
                     sessionCookie = (String) params[1];
                     folderName = (String) params[2];
-                    URL = (folderName.equals(""))? course.getUrl() : (String) params[3];
+                    URL = (folderName.equals("")) ? course.getUrl() : (String) params[3];
                     htmlDocument = Jsoup.connect(URL).cookie("MoodleSession", sessionCookie).get();
                     links = htmlDocument.select("a[href]");
                 } catch (IOException e) {
@@ -539,7 +566,7 @@ public class MainActivity extends AppCompatActivity {
                     }
 
                     if (link.attr("abs:href").startsWith(mainPageUrl + "mod/folder") && !link.attr("abs:href").contains("#")) {
-                        if (!folderLinks.contains(link.attr("abs:href")) && !folderLinks.contains(link.attr("abs:href")+"#")) {
+                        if (!folderLinks.contains(link.attr("abs:href")) && !folderLinks.contains(link.attr("abs:href") + "#")) {
                             Log.d("Folder", link.toString());
                             JsoupAsyncTask jsoupAsyncTask = new JsoupAsyncTask();
                             jsoupAsyncTask.execute(course, sessionCookie, link.text(), link.attr("abs:href"));
@@ -555,11 +582,17 @@ public class MainActivity extends AppCompatActivity {
                 if (linksToDownload != null) {
                     for (Element link : linksToDownload) {
                         DownloadFileFromURL download = new DownloadFileFromURL();
-                        download.execute(link.attr("abs:href"), course.getName().substring(0, 6) + "/" + ((folderName.equals("")) ? "" : folderName+"/") + link.text());
+                        download.execute(link.attr("abs:href"), course.getName().substring(0, 6) + "/" + ((folderName.equals("")) ? "" : folderName + "/") + link.text());
 //                    downloadLinks.add(course.getUrl());
 //                    fileNames.add(course.getPath() + link.text());
                         Log.d(TAG, link.text() + ": " + link.attr("abs:href"));
                     }
+                }
+                asyncCount--;
+                arcProgress.setProgress((int) ((coursesDownloaded + 0.5) * 100.0 / (coursesToDownload)));
+                Log.d("async", "Async count: " + asyncCount);
+                if (asyncCount == 0 && downloadsRemaining == 0) {
+                    DashboardDownloadsComplete();
                 }
             } else {
                 Log.wtf(TAG, "JsoupAsyncTask links null");
@@ -615,9 +648,19 @@ public class MainActivity extends AppCompatActivity {
                         nfthreads.add(url);
                         JsoupAsyncTaskFetchNfThread jsoupAsyncTaskFetchNfThread = new JsoupAsyncTaskFetchNfThread();
                         jsoupAsyncTaskFetchNfThread.execute(link.attr("abs:href"), course.getName(), sessionCookie);
+                        asyncCount++;
                     }
                 }
-                nfDownloaded = true;
+                coursesDownloaded++;
+                arcProgress.setProgress((int) (coursesDownloaded * 100.0 / (coursesToDownload)));
+                if (coursesDownloaded == coursesToDownload) {
+                    coursesDownloaded = 0;
+                }
+                asyncCount--;
+                Log.d("async", "Async count: " + asyncCount);
+                if (asyncCount == 0 && downloadsRemaining == 0) {
+                    DashboardDownloadsComplete();
+                }
             } else {
                 Log.wtf(TAG, "JsoupAsyncTaskFetchNf links null");
                 JsoupAsyncTaskFetchNf jsoupAsyncTaskFetchNf = new JsoupAsyncTaskFetchNf();
@@ -651,7 +694,7 @@ public class MainActivity extends AppCompatActivity {
                 } catch (IOException e) {
                     e.printStackTrace();
                 }
-            }else {
+            } else {
                 this.cancel(true);
             }
             return null;
@@ -687,6 +730,12 @@ public class MainActivity extends AppCompatActivity {
                     } catch (UnsupportedEncodingException e) {
                         e.printStackTrace();
                     }
+                }
+
+                asyncCount--;
+                Log.d("async", "Async count: " + asyncCount);
+                if (asyncCount == 0 && downloadsRemaining == 0) {
+                    DashboardDownloadsComplete();
                 }
             } else {
                 Log.wtf(TAG, "JsoupAsyncTaskFetchNfThread links null");
@@ -731,6 +780,11 @@ public class MainActivity extends AppCompatActivity {
         protected String doInBackground(final String... params) {
             int count;
             try {
+                if (!lastDownloaded.equals(params[1].substring(0, 6))) {
+                    Log.d("DownloadFileFromURL", params[1].substring(0, 6));
+                    //coursesDownloaded++;
+                    lastDownloaded = params[1].substring(0, 6);
+                }
                 final int endIndex = params[1].lastIndexOf("/");
 
                 final OkHttpClient.Builder builder = new OkHttpClient.Builder();
@@ -761,7 +815,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
-                            arcProgress.setBottomText(dir.substring(0,6));
+                            arcProgress.setBottomText(dir.substring(0, 6));
                             filenametv.setText(filename);
                             log.append("Downloading " + filename + " to " + file.getPath() + "\n\n");
                             scrollToBottom();
@@ -813,7 +867,7 @@ public class MainActivity extends AppCompatActivity {
         @Override
         protected void onProgressUpdate(Integer... values) {
             arcProgress.setVisibility(View.VISIBLE);
-            arcProgress.setProgress(values[0]*100/contentLength);
+            arcProgress.setProgress(values[0] * 100 / contentLength);
             notifBuilder.setProgress(contentLength, values[0], false);
         }
 
@@ -827,32 +881,15 @@ public class MainActivity extends AppCompatActivity {
             cdt.onFinish();
             cdt.cancel();
 
-            if (nfDownloaded && downloadsRemaining == 0) {
+            if (asyncCount == 0 && downloadsRemaining == 0) {
                 Log.d(TAG, "All downloads complete.");
                 DashboardDownloadsComplete();
             }
-            Log.d(TAG, "Downloads remaining = " + downloadsRemaining);
+            Log.d(TAG, "Downloads remaining = " + downloadsRemaining + " async count = " + asyncCount);
             arcProgress.setProgress(100);
 //            arcProgress.setVisibility(View.INVISIBLE);
         }
 
-    }
-
-    private void DashboardDownloadsComplete() {
-        if (!dashboardState.equals("connectionProblems")) {
-            dld.setEnabled(true);
-            filenametv.setText("All downloads complete!");
-            log.append("All downloads complete.\n\n");
-            scrollToBottom();
-            arcProgress.setVisibility(View.INVISIBLE);
-            downloadtv.setVisibility(View.VISIBLE);
-            downloadtv.setText("DOWNLOAD AGAIN");
-            dashboardState = "complete";
-        }
-        notifBuilder.setContentText("All downloads complete")
-                .setProgress(0, 0, false)
-                .setOngoing(false);
-        notifManager.notify(NOTIFICATION_ID, notifBuilder.build());
     }
 
     private class JsoupNameAsyncTask extends AsyncTask<String, String, Void> {
@@ -930,14 +967,6 @@ public class MainActivity extends AppCompatActivity {
 
 
             return response;
-        }
-    }
-
-    @Override
-    protected void onDestroy() {
-        super.onDestroy();
-        if (notifManager!=null) {
-            notifManager.cancelAll();
         }
     }
 }

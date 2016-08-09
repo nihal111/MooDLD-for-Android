@@ -1,9 +1,9 @@
 package com.moodld.moodld;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -37,6 +37,8 @@ import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 
+import dmax.dialog.SpotsDialog;
+
 public class Preferences extends AppCompatActivity {
 
     private static final String TAG = "Preferences";
@@ -46,7 +48,7 @@ public class Preferences extends AppCompatActivity {
     SharedPreferences coursePrefs;
     String rootDir, sessionCookie;
     Integer pending = 0;
-    ProgressDialog dialog;
+    AlertDialog dialog;
     private ListView listView;
     private ArrayAdapter<Course> listAdapter;
     private TextView root_dir_value;
@@ -91,9 +93,7 @@ public class Preferences extends AppCompatActivity {
             }
         }
 
-        dialog = new ProgressDialog(this);
-        dialog.setTitle("Please wait");
-        dialog.setMessage("Loading courses...");
+        dialog = new SpotsDialog(this, "Loading courses");
         dialog.setCancelable(false);
         dialog.show();
 

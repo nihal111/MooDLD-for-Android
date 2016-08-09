@@ -42,4 +42,5 @@ dependencies {
     compile 'com.github.lzyzsd:circleprogress:1.1.0@aar'
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.paolorotolo:appintro:4.0.0'
+    compile 'com.github.d-max:spots-dialog:0.4@aar'
 }

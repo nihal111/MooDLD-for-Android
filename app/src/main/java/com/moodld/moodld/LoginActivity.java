@@ -1,11 +1,10 @@
 package com.moodld.moodld;
 
+import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
-import android.graphics.Color;
-import android.graphics.PorterDuff;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,7 +13,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.RelativeLayout;
 import android.widget.Toast;
 
 import com.google.android.gms.appindexing.Action;
@@ -27,6 +25,7 @@ import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.List;
 
+import dmax.dialog.SpotsDialog;
 import okhttp3.Cookie;
 import okhttp3.CookieJar;
 import okhttp3.HttpUrl;
@@ -44,8 +43,8 @@ public class LoginActivity extends AppCompatActivity {
     private final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private final String TAG = "LoginActivity";
     private final String PREFS_NAME = "LoginDetails";
+    AlertDialog dialog;
     private boolean details_correct = false;
-    ProgressDialog dialog;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -152,6 +151,16 @@ public class LoginActivity extends AppCompatActivity {
         client.disconnect();
     }
 
+    private void SaveLoginDetails(String username, String password, String MoodleSession) {
+        SharedPreferences preferences = LoginActivity.this.getSharedPreferences("LoginDetails", Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = preferences.edit();
+        editor.putString("username", username);
+        editor.putString("password", password);
+        editor.putString("MoodleSession", MoodleSession);
+        editor.apply();
+        Log.d(TAG, "Saved Login Details.");
+    }
+
     private class LoginAsyncTask extends AsyncTask<String, Void, Void> {
 
         public final MediaType MEDIA_TYPE = MediaType.parse("application/x-www-form-urlencoded");
@@ -159,9 +168,7 @@ public class LoginActivity extends AppCompatActivity {
 
         @Override
         public void onPreExecute() {
-            dialog = new ProgressDialog(LoginActivity.this);
-            dialog.setTitle("Please wait");
-            dialog.setMessage("Logging you in...");
+            dialog = new SpotsDialog(LoginActivity.this, "Logging you in...");
             dialog.setCancelable(false);
             dialog.show();
         }
@@ -241,21 +248,10 @@ public class LoginActivity extends AppCompatActivity {
                 Intent intent = new Intent(LoginActivity.this, MainActivity.class);
                 startActivity(intent);
                 finish();
-            }
-            else {
+            } else {
                 dialog.dismiss();
             }
         }
-    }
-
-    private void SaveLoginDetails(String username, String password, String MoodleSession) {
-        SharedPreferences preferences = LoginActivity.this.getSharedPreferences("LoginDetails", Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = preferences.edit();
-        editor.putString("username", username);
-        editor.putString("password", password);
-        editor.putString("MoodleSession", MoodleSession);
-        editor.apply();
-        Log.d(TAG, "Saved Login Details.");
     }
 
     //For debugging purposes
