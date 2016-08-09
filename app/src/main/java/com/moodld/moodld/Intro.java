@@ -65,5 +65,6 @@ public class Intro extends AppIntro {
     public void getStarted(View view) {
         Intent intent = new Intent(Intro.this, MainActivity.class);
         startActivity(intent);
+        finish();
     }
 }

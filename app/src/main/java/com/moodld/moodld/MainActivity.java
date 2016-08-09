@@ -807,7 +807,7 @@ public class MainActivity extends AppCompatActivity {
                 if (!directory.exists()) {
                     directory.mkdirs();
                 }
-                final File file = new File(directory, filename + ".pdf");
+                final File file = new File(directory, filename + ((filename.endsWith(".pdf")) ? "" : ".pdf"));
                 Log.d(TAG, "Storage path = " + file.getPath());
 
                 if (!file.exists()) {
