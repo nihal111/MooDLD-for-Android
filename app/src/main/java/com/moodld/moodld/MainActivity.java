@@ -344,6 +344,8 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("password", null);
         editor.putString("MoodleSession", null);
         editor.apply();
+        editor = getSharedPreferences("CourseList", MODE_PRIVATE).edit();
+        editor.putString("CourseList", null);
         Log.d(TAG, "Logged out.");
         Intent intent = new Intent(MainActivity.this, LoginActivity.class);
         startActivity(intent);

@@ -35,6 +35,7 @@ import org.jsoup.select.Elements;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 
 import dmax.dialog.SpotsDialog;
@@ -45,6 +46,8 @@ public class Preferences extends AppCompatActivity {
     private static final String mainPageUrl = "http://moodle.iitb.ac.in/";
     private final int REQUEST_DIRECTORY = 0, MAX_RETRIES = 5;
     ArrayList<Course> CourseList = new ArrayList<Course>();
+    ArrayList<String> fetchedCourses = new ArrayList<String>();
+    ArrayList<Course> removal = new ArrayList<Course>();
     SharedPreferences coursePrefs;
     String rootDir, sessionCookie;
     Integer pending = 0;
@@ -210,6 +213,12 @@ public class Preferences extends AppCompatActivity {
     }
 
     private void onLoadComplete() {
+        for (int i = 0; i < CourseList.size(); i++) {
+            if (!fetchedCourses.contains(CourseList.get(i).getUrl())) {
+                removal.add(CourseList.get(i));
+            }
+        }
+        CourseList.removeAll(removal);
         Log.d(TAG, "CourseList after merging fetched and saved data: " + CourseList.toString());
         runOnUiThread(new Runnable() {
             @Override
@@ -262,9 +271,10 @@ public class Preferences extends AppCompatActivity {
             if (links != null) {
                 Course course;
                 for (Element link : links) {
-                    if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
+                    if (link.attr("abs:href").startsWith(mainPageUrl + "course") && !link.attr("abs:href").equals("http://moodle.iitb.ac.in/course/index.php")) {
                         course = new Course(link.text(), link.attr("abs:href"), rootDir + "/MooDLD/" + link.text().substring(0, 6));
                         Boolean flag = false;
+                        fetchedCourses.add(course.getUrl());
                         for (int i = 0; i < CourseList.size(); i++) {
                             if (CourseList.get(i).getUrl().equals(course.getUrl())) {
                                 flag = true;
