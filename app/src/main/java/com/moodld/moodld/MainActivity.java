@@ -445,6 +445,12 @@ public class MainActivity extends AppCompatActivity {
                 Log.d(TAG, course.getName());
             }
         }
+        if (coursesToDownload == 0) {
+            Toast.makeText(getApplicationContext(), "Please select some courses.", Toast.LENGTH_LONG).show();
+            Intent i = new Intent(MainActivity.this, Preferences.class);
+            startActivity(i);
+            finish();
+        }
     }
 
     void scrollToBottom() {
