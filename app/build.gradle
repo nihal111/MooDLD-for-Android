@@ -43,4 +43,5 @@ dependencies {
     compile 'de.hdodenhof:circleimageview:2.1.0'
     compile 'com.github.paolorotolo:appintro:4.0.0'
     compile 'com.github.d-max:spots-dialog:0.4@aar'
+    compile 'com.squareup.picasso:picasso:2.5.2'
 }

@@ -7,6 +7,7 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
 import android.graphics.BitmapFactory;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -24,6 +25,7 @@ import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.FrameLayout;
+import android.widget.ImageView;
 import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -41,6 +43,9 @@ import com.mikepenz.materialdrawer.model.PrimaryDrawerItem;
 import com.mikepenz.materialdrawer.model.ProfileDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IDrawerItem;
 import com.mikepenz.materialdrawer.model.interfaces.IProfile;
+import com.mikepenz.materialdrawer.util.AbstractDrawerImageLoader;
+import com.mikepenz.materialdrawer.util.DrawerImageLoader;
+import com.squareup.picasso.Picasso;
 
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
@@ -87,9 +92,7 @@ public class MainActivity extends AppCompatActivity {
     private Drawer result;
     private FrameLayout dld;
     private String sessionCookie = null, email = null, rootDir = null, dashboardState = "ready", lastDownloaded = "";
-    private ArrayList<String> downloadLinks = new ArrayList<String>();
     private ArrayList<String> folderLinks = new ArrayList<String>();
-    private ArrayList<String> courseNames = new ArrayList<String>();
     private ArcProgress arcProgress;
 
     @Override
@@ -244,15 +247,15 @@ public class MainActivity extends AppCompatActivity {
         PrimaryDrawerItem about = new PrimaryDrawerItem().withName(R.string.nav_item_about).withIdentifier(5).withSelectable(false).withIcon(FontAwesome.Icon.faw_info);
         final PrimaryDrawerItem logout = new PrimaryDrawerItem().withName(R.string.nav_item_logout).withIdentifier(6).withSelectable(false).withIcon(FontAwesome.Icon.faw_sign_out);
 
-//        DrawerImageLoader.init(new AbstractDrawerImageLoader() {
-//            @Override
-//            public void set(ImageView imageView, Uri uri, Drawable placeholder) {
-//                // super.set(imageView, uri, placeholder);
-//                Log.d(TAG, "Loading Profile picture via Picasso");
-//                Picasso.with(Dashboard.this).load(uri).resize(100, 100).centerCrop().into(imageView);
-//            }
-//
-//        });
+        DrawerImageLoader.init(new AbstractDrawerImageLoader() {
+            @Override
+            public void set(ImageView imageView, Uri uri, Drawable placeholder) {
+                // super.set(imageView, uri, placeholder);
+                Log.d(TAG, "Loading Profile picture via Picasso");
+                Picasso.with(MainActivity.this).load(uri).resize(100, 100).centerCrop().into(imageView);
+            }
+
+        });
 
         // Create the AccountHeader
         headerResult = new AccountHeaderBuilder()
@@ -928,19 +931,18 @@ public class MainActivity extends AppCompatActivity {
                 } catch (Exception e) {
                     e.printStackTrace();
                 }
+                String myname = "", photoUrl = "", userID = "";
                 for (Element link : links) {
-                    if (link.attr("abs:href").startsWith(mainPageUrl + "course")) {
-                        downloadLinks.add(link.attr("abs:href"));
-                        courseNames.add(link.text().substring(0, 6));
-                    } else if (link.attr("abs:href").startsWith(mainPageUrl + "user/profile.php") && !link.text().equals("My profile") && !link.text().equals("View profile")) {
-                        String myname = link.text();
+                   if (link.attr("abs:href").startsWith(mainPageUrl + "user/profile.php") && !link.text().equals("My profile") && !link.text().equals("View profile")) {
+                        myname = link.text();
                         Log.d(TAG, myname);
-                        final IProfile profile = new ProfileDrawerItem().withName(myname).withEmail(email).withIcon(ResourcesCompat.getDrawable(getResources(), R.drawable.user, null));
-                        headerResult.addProfiles(profile);
-                    }
+                    } else if (link.attr("abs:href").startsWith(mainPageUrl + "user/profile.php?id=") && link.text().equals("My profile")) {
+                       userID = link.attr("abs:href").substring((link.attr("abs:href").indexOf("?id=")+4));
+                       photoUrl = "http://moodle.iitb.ac.in/pluginfile.php/" + userID + "/user/icon/clean/f1";
+                   }
                 }
-                Log.d(TAG, downloadLinks.toString());
-                Log.d(TAG, courseNames.toString());
+                final IProfile profile = new ProfileDrawerItem().withName(myname).withEmail(email).withIcon(photoUrl);
+                headerResult.addProfiles(profile);
             } else {
                 Log.wtf(TAG, "JsoupNameAsyncTask links null");
                 JsoupNameAsyncTask jsoupNameAsyncTask = new JsoupNameAsyncTask();
