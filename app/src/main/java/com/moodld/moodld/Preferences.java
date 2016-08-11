@@ -317,22 +317,10 @@ public class Preferences extends AppCompatActivity {
             try {
                 course = (Course) params[0];
                 sessionCookie = (String) params[1];
-                int retries = 0;
-                while (links.size() == 0 && retries < MAX_RETRIES) {
-                    htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", sessionCookie).get();
-                    links = htmlDocument.select("a[href]");
-                    Log.d(TAG, String.valueOf(links.size()));
-                    retries += 1;
-                }
-                if (links.size() == 0) {
-                    throw new IOException();
-                }
-            } catch (IOException e) {
+                htmlDocument = Jsoup.connect(course.getUrl()).cookie("MoodleSession", sessionCookie).get();
+                links = htmlDocument.select("a[href]");
+                } catch (IOException e) {
                 e.printStackTrace();
-                Intent noInternetIntent = new Intent(Preferences.this, MainActivity.class);
-                noInternetIntent.putExtra("noInternet", true);
-                startActivity(noInternetIntent);
-                finish();
             }
             return null;
         }
