@@ -61,6 +61,7 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 import java.lang.reflect.Type;
 import java.net.InetAddress;
+import java.net.URLDecoder;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -806,19 +807,20 @@ public class MainActivity extends AppCompatActivity {
                         .build();
                 final Response response = client.newCall(request).execute();
                 InputStream is = response.body().byteStream();
+                String redirectedUrl = response.request().url().toString();
+                final String filename = URLDecoder.decode(redirectedUrl, "UTF-8").substring(redirectedUrl.lastIndexOf("/")+1);
 
                 BufferedInputStream input = new BufferedInputStream(is);
 //                File ExternalStorageRoot = Environment.getExternalStorageDirectory();
 //                params[1] = params[1].replace(" ","");
                 final String dir = params[1].substring(0, endIndex);
-                final String filename = params[1].substring(endIndex + 1);
                 Log.d(TAG, "Directory = " + dir);
                 Log.d(TAG, "File name = " + filename);
                 File directory = new File(rootDir, dir);
                 if (!directory.exists()) {
                     directory.mkdirs();
                 }
-                final File file = new File(directory, filename + ((filename.endsWith(".pdf")) ? "" : ".pdf"));
+                final File file = new File(directory, filename);
                 Log.d(TAG, "Storage path = " + file.getPath());
 
                 if (!file.exists()) {
